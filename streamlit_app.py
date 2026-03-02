@@ -13,6 +13,9 @@ MODEL_PATH = "yolov8n.pt"
 ALERT_SOUND = "siren-alert-96052.mp3"
 WILD_CLASSES = ["bear", "elephant", "tiger", "lion", "leopard", "wolf", "giraffe", "zebra"]
 
+# Check if running on Streamlit Cloud or Locally
+IS_CLOUD = os.environ.get("STREAMLIT_RUNTIME_ENV") == "cloud" or os.environ.get("HOSTNAME", "").startswith("streamlit")
+
 # ================= HELPER FUNCTIONS =================
 @st.cache_resource
 def load_model():
@@ -199,14 +202,43 @@ elif st.session_state.page == "live":
         st.session_state.page = "main"
         st.rerun()
 
-    webrtc_streamer(
-        key="live-detection",
-        video_transformer_factory=VideoTransformer,
-        rtc_configuration=RTCConfiguration(
-            {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-        ),
-        media_stream_constraints={"video": True, "audio": False},
-    )
-    st.info("The live stream will process every frame using AI. If a wild animal is detected, a red alert will appear on the video.")
+    if not IS_CLOUD:
+        st.markdown('<div style="text-align:center; padding:10px; background:#fff3cd; border-radius:5px; margin-bottom:10px;">🏠 <b>Local Mode Detected:</b> You can use the Direct Camera for better performance.</div>', unsafe_allow_html=True)
+        local_mode = st.toggle("Use Direct Camera (Offline/Zero Latency)", value=True)
+    else:
+        local_mode = False
+
+    if local_mode:
+        run_local = st.button("▶️ Start Direct Camera Scan")
+        if run_local:
+            cap = cv2.VideoCapture(0)
+            st_frame = st.empty()
+            stop_btn = st.button("⏹️ Stop Camera")
+            
+            while cap.isOpened() and not stop_btn:
+                ret, frame = cap.read()
+                if not ret: break
+                
+                annotated_img, alert = process_frame(frame, model)
+                st_frame.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
+                
+                # Check for stop inside loop (basic streamlit pattern)
+                # Note: Direct OpenCV loops in Streamlit can be tricky with buttons, 
+                # but this works well for local/offline use cases.
+                if stop_btn: break
+                
+            cap.release()
+            st.rerun()
+    else:
+        st.write("### 🌐 Cloud Stream (WebRTC)")
+        webrtc_streamer(
+            key="live-detection",
+            video_transformer_factory=VideoTransformer,
+            rtc_configuration=RTCConfiguration(
+                {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+            ),
+            media_stream_constraints={"video": True, "audio": False},
+        )
+        st.info("The live stream will process every frame using AI. If a wild animal is detected, a red alert will appear on the video.")
 
 st.markdown("<br><br>", unsafe_allow_html=True)
