@@ -6,15 +6,11 @@ from ultralytics import YOLO
 from PIL import Image
 import os
 import tempfile
-from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, RTCConfiguration
 
 # ================= CONFIG =================
 MODEL_PATH = "yolov8n.pt"
 ALERT_SOUND = "siren-alert-96052.mp3"
 WILD_CLASSES = ["bear", "elephant", "tiger", "lion", "leopard", "wolf", "giraffe", "zebra"]
-
-# Check if running on Streamlit Cloud or Locally
-IS_CLOUD = os.environ.get("STREAMLIT_RUNTIME_ENV") == "cloud" or os.environ.get("HOSTNAME", "").startswith("streamlit")
 
 # ================= HELPER FUNCTIONS =================
 @st.cache_resource
@@ -35,24 +31,9 @@ def process_frame(frame, model):
         label = safe_label(model, cls_id)
         if label in WILD_CLASSES:
             alert_triggered = True
-            # Add red alert text exactly like the original GUI code
-            cv2.putText(annotated_frame, "WILD ANIMAL ALERT!", (10, 50),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
             break
     
     return annotated_frame, alert_triggered
-
-class VideoTransformer(VideoTransformerBase):
-    def __init__(self):
-        self.model = load_model()
-
-    def transform(self, frame):
-        img = frame.to_ndarray(format="bgr24")
-        annotated_img, alert = process_frame(img, self.model)
-        
-        # If alert is triggered, sound logic is handled separately in Streamlit apps 
-        # as the transform runs in a separate thread. For now, we show the visual alert.
-        return annotated_img
 
 # ================= MAIN APP =================
 st.set_page_config(
@@ -202,43 +183,12 @@ elif st.session_state.page == "live":
         st.session_state.page = "main"
         st.rerun()
 
-    if not IS_CLOUD:
-        st.markdown('<div style="text-align:center; padding:10px; background:#fff3cd; border-radius:5px; margin-bottom:10px;">🏠 <b>Local Mode Detected:</b> You can use the Direct Camera for better performance.</div>', unsafe_allow_html=True)
-        local_mode = st.toggle("Use Direct Camera (Offline/Zero Latency)", value=True)
-    else:
-        local_mode = False
-
-    if local_mode:
-        run_local = st.button("▶️ Start Direct Camera Scan")
-        if run_local:
-            cap = cv2.VideoCapture(0)
-            st_frame = st.empty()
-            stop_btn = st.button("⏹️ Stop Camera")
-            
-            while cap.isOpened() and not stop_btn:
-                ret, frame = cap.read()
-                if not ret: break
-                
-                annotated_img, alert = process_frame(frame, model)
-                st_frame.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
-                
-                # Check for stop inside loop (basic streamlit pattern)
-                # Note: Direct OpenCV loops in Streamlit can be tricky with buttons, 
-                # but this works well for local/offline use cases.
-                if stop_btn: break
-                
-            cap.release()
-            st.rerun()
-    else:
-        st.write("### 🌐 Cloud Stream (WebRTC)")
-        webrtc_streamer(
-            key="live-detection",
-            video_transformer_factory=VideoTransformer,
-            rtc_configuration=RTCConfiguration(
-                {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-            ),
-            media_stream_constraints={"video": True, "audio": False},
-        )
-        st.info("The live stream will process every frame using AI. If a wild animal is detected, a red alert will appear on the video.")
+    img_file_buffer = st.camera_input("Scanner Active")
+    if img_file_buffer:
+        bytes_data = img_file_buffer.getvalue()
+        cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
+        annotated_img, alert = process_frame(cv2_img, model)
+        st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
+        if alert: st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
 
 st.markdown("<br><br>", unsafe_allow_html=True)
