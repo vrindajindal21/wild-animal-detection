@@ -54,57 +54,68 @@ st.set_page_config(
 # Load AI Model
 model = load_model()
 
-# ================= CSS: EXACT TKINTER MIRROR =================
+# ================= CSS: IMPROVED TKINTER MIRROR =================
 st.markdown("""
 <style>
-    /* Exact Background from Tkinter */
+    /* Main Background */
     .stApp {
         background-color: #E3F2FD !important;
-        font-family: 'Arial', sans-serif !important;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
     }
 
-    /* Fixed Width Centered Container */
-    [data-testid="stVerticalBlock"] > div:first-child {
-        background-color: #E3F2FD !important;
-        border: none !important;
-        box-shadow: none !important;
-        backdrop-filter: none !important;
-        padding-top: 10px !important;
-    }
-
-    /* Title Label Styling */
-    .tk-label {
-        color: #0D47A1;
-        font-weight: bold;
-        font-size: 24px;
-        text-align: center;
-        margin-bottom: 20px;
-        padding: 10px;
-    }
-
-    /* Standard Tkinter-style Buttons */
+    /* Fix for White Buttons in Screenshot */
     div.stButton > button {
         width: 100% !important;
         color: white !important;
-        font-weight: bold !important;
-        border: 1px solid rgba(0,0,0,0.1) !important;
-        border-radius: 2px !important;
-        padding: 8px !important;
-        font-family: 'Arial', sans-serif !important;
-        margin-bottom: 5px !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 12px 24px !important;
+        margin-bottom: 12px !important;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
+        transition: all 0.2s ease !important;
     }
 
-    /* Specific Button Colors to match Button(bg='...') */
-    /* Button Indexing in the main block */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(2) button { background-color: #1565C0 !important; } /* Upload Images */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: #43A047 !important; } /* Upload Videos */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: orange !important; }  /* Start Live */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: red !important; }     /* Stop Live */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(6) button { background-color: purple !important; }  /* Exit */
+    div.stButton > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15) !important;
+        filter: brightness(1.1);
+    }
 
-    /* Hide Streamlit elements to keep it "GUI-only" */
+    /* Assigning Colors using specialized selectors */
+    /* Images - Blue */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(1) button,
+    div.stButton button:contains("Upload Images") { background-color: #1565C0 !important; }
+    
+    /* Videos - Green */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(2) button,
+    div.stButton button:contains("Upload Videos") { background-color: #43A047 !important; }
+    
+    /* Live - Orange */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(3) button,
+    div.stButton button:contains("Start Live") { background-color: #FF9800 !important; }
+    
+    /* Stop - Red */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(4) button,
+    div.stButton button:contains("Stop Live") { background-color: #D32F2F !important; }
+    
+    /* Exit - Purple */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(5) button,
+    div.stButton button:contains("Exit") { background-color: #7B1FA2 !important; }
+
+    /* Title Styling */
+    .tk-label {
+        color: #0D47A1;
+        font-weight: 800;
+        font-size: 32px;
+        text-align: center;
+        margin-bottom: 40px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+    }
+
+    /* Clean up headers */
     header { visibility: hidden; }
-    #MainMenu { visibility: hidden; }
     footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
