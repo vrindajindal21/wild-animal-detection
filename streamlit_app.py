@@ -39,53 +39,98 @@ def process_frame(frame, model):
 st.set_page_config(
     page_title="Wild Animal Detection System", 
     page_icon="🐯", 
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
 
-# Custom Styling
-st.markdown("""
+# Custom Color Palette from original UI
+# Bg: #E3F2FD, Title Fg: #0D47A1, Buttons: #1565C0, #43A047, orange, red, purple
+
+st.markdown(f"""
 <style>
-    .main {
-        background-color: #f0f2f6;
-    }
-    .stButton>button {
+    /* Main Background */
+    .stApp {{
+        background-color: #E3F2FD;
+    }}
+    
+    /* Header Style */
+    .main-title {{
+        color: #0D47A1;
+        font-family: 'Arial', sans-serif;
+        font-weight: bold;
+        font-size: 32px;
+        text-align: center;
+        padding: 20px;
+    }}
+    
+    /* Button Styles to match Tkinter */
+    div.stButton > button {{
         width: 100%;
-        border-radius: 10px;
-        height: 3em;
-        background-color: #1a73e8;
         color: white;
-    }
-    .stAlert {
-        border-radius: 10px;
-    }
+        font-weight: bold;
+        border: none;
+        border-radius: 5px;
+        padding: 10px;
+    }}
+    
+    /* Button Specific Colors */
+    /* Images - Blue */
+    [data-testid="stBaseButton-secondary"]:nth-child(1) {{
+        background-color: #1565C0;
+    }}
+    /* Videos - Green */
+    [data-testid="stBaseButton-secondary"]:nth-child(2) {{
+        background-color: #43A047;
+    }}
+    /* Live - Orange */
+    [data-testid="stBaseButton-secondary"]:nth-child(3) {{
+        background-color: orange;
+    }}
+    /* Stop - Red */
+    [data-testid="stBaseButton-secondary"]:nth-child(4) {{
+        background-color: red;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🐯 Wild Animal Detection System")
+st.markdown('<div class="main-title">🐾 Wild Animal Detection System</div>', unsafe_allow_html=True)
 st.markdown("---")
 
-st.sidebar.image("https://img.icons8.com/clouds/100/tiger.png", width=100)
-st.sidebar.header("Navigation")
-menu = ["🏠 Home", "📸 Image Detection", "🎥 Video Detection", "🤳 Snapshot Detection"]
-choice = st.sidebar.radio("Go to", menu)
-
+# Load AI Model
 model = load_model()
 
-if choice == "🏠 Home":
-    st.subheader("Welcome to the Wildlife Safety System")
+# Session State for navigation
+if 'page' not in st.session_state:
+    st.session_state.page = "🏠 Home"
+
+# Layout: Column buttons (like the Tkinter menu)
+col1, col2, col3 = st.columns([1, 2, 1])
+
+with col2:
+    if st.button("Upload Images"):
+        st.session_state.page = "📸 Image Detection"
+    if st.button("Upload Videos"):
+        st.session_state.page = "🎥 Video Detection"
+    if st.button("Start Live Detection"):
+        st.session_state.page = "🤳 Snapshot Detection"
+    if st.button("Stop Analysis"):
+        st.session_state.page = "🏠 Home"
+    if st.button("Exit"):
+        st.stop()
+
+st.markdown("---")
+
+# Conditional Display based on page
+if st.session_state.page == "🏠 Home":
     st.image("https://images.unsplash.com/photo-1546182990-dffeafbe841d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", caption="Wild Forest", use_container_width=True)
     st.write("""
-    This application uses state-of-the-art **YOLOv8** deep learning model to detect dangerous wild animals in images, videos, or snapshots.
-    
     ### Detected Animals:
     - 🐯 Tiger, 🦁 Lion, 🐆 Leopard
     - 🐘 Elephant, 🦒 Giraffe, 🦓 Zebra
     - 🐻 Bear, 🐺 Wolf
     """)
-    st.info("💡 **How it works:** Select a mode from the sidebar, upload your file, and the AI will analyze it in real-time. If it detects a dangerous animal, an alert will sound!")
 
-elif choice == "📸 Image Detection":
+elif st.session_state.page == "📸 Image Detection":
     st.header("Upload Image for Analysis")
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
     
@@ -110,7 +155,7 @@ elif choice == "📸 Image Detection":
         else:
             st.success("✅ Area appears to be safe.")
 
-elif choice == "🎥 Video Detection":
+elif st.session_state.page == "🎥 Video Detection":
     st.header("Video Stream Analysis")
     uploaded_video = st.file_uploader("Upload a video clip", type=["mp4", "avi", "mov"])
     
@@ -121,13 +166,12 @@ elif choice == "🎥 Video Detection":
         cap = cv2.VideoCapture(tfile.name)
         st_frame = st.empty()
         
-        if st.button("Start Video Analysis"):
+        if st.button("Run Model on Video"):
             while cap.isOpened():
                 ret, frame = cap.read()
                 if not ret:
                     break
                 
-                # Resizing frame for faster processing in browsers
                 frame = cv2.resize(frame, (640, 480))
                 annotated_frame, alert = process_frame(frame, model)
                 
@@ -140,9 +184,9 @@ elif choice == "🎥 Video Detection":
             os.remove(tfile.name)
             st.success("Video analysis completed.")
 
-elif choice == "🤳 Snapshot Detection":
+elif st.session_state.page == "🤳 Snapshot Detection":
     st.header("Real-time Snapshot")
-    img_file_buffer = st.camera_input("Smile & Stay Safe - Take a snapshot of your environment")
+    img_file_buffer = st.camera_input("Snapshot for environment analysis")
 
     if img_file_buffer is not None:
         bytes_data = img_file_buffer.getvalue()
@@ -154,10 +198,10 @@ elif choice == "🤳 Snapshot Detection":
         st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB), caption="Snapshot Analysis")
         
         if alert:
-            st.error("🚨 **DANGER!** Wild animal detected near your camera.")
+            st.error("🚨 **DANGER!** Wild animal detected.")
             st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
         else:
-            st.success("✅ Snapshot indicates no immediate danger.")
+            st.success("✅ Area Clear.")
 
-st.sidebar.markdown("---")
-st.sidebar.caption("Built with ❤️ using Streamlit & YOLOv8")
+st.markdown("---")
+st.caption("Built with ❤️ using Streamlit & YOLOv8 (Original UI Mirror)")
