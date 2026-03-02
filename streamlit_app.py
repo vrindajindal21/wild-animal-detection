@@ -43,87 +43,133 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# ================= MAIN APP =================
+st.set_page_config(
+    page_title="Wild Animal Detection System", 
+    page_icon="🐯", 
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
+
 # Load AI Model
 model = load_model()
 
-# Refined CSS for exact Tkinter Match
+# Premium Ultra-Modern Nature CSS
 st.markdown("""
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
-    /* Main Background */
+    /* Global Styles */
     .stApp {
-        background-color: #E3F2FD;
+        background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+        font-family: 'Outfit', sans-serif !important;
+        color: white;
     }
-    
-    /* Header Style */
-    .header-text {
-        color: #0D47A1;
-        font-family: 'Arial', sans-serif;
-        font-weight: bold;
-        font-size: 28px;
+
+    /* Container Styling */
+    [data-testid="stVerticalBlock"] > div:first-child {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(15px);
+        border-radius: 24px;
+        padding: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        margin-top: 20px;
+    }
+
+    /* Header */
+    .premium-header {
+        background: linear-gradient(to right, #ffd452 0%, #f76b1c 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 42px;
+        font-weight: 800;
         text-align: center;
-        margin-bottom: 30px;
+        letter-spacing: -1px;
+        margin-bottom: 5px;
     }
-    
-    /* Center the menu buttons */
-    .stButton > button {
-        width: 100% !important;
-        height: 2.5em;
-        font-weight: bold;
+    .sub-caption {
+        color: rgba(255, 255, 255, 0.7);
+        text-align: center;
+        font-size: 16px;
+        margin-bottom: 40px;
+        font-weight: 300;
+    }
+
+    /* Button Overrides */
+    div.stButton > button {
+        background: rgba(255, 255, 255, 0.1) !important;
         color: white !important;
-        border-radius: 4px;
-        border: 1px solid rgba(0,0,0,0.1);
-        margin-bottom: 10px;
-        transition: transform 0.1s;
-    }
-    
-    .stButton > button:hover {
-        transform: scale(1.02);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        height: 3.5em !important;
+        font-size: 18px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px !important;
+        width: 100% !important;
     }
 
-    /* Button Specific Colors - Targeted by index */
-    /* Images - Blue */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(1) button { background-color: #1565C0 !important; }
-    /* Videos - Green */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(2) button { background-color: #43A047 !important; }
-    /* Live - Orange */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: orange !important; }
-    /* Stop - Red */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: red !important; }
-    /* Exit - Purple */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: purple !important; }
+    div.stButton > button:hover {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        box-shadow: 0 0 20px rgba(255, 212, 82, 0.2) !important;
+        transform: translateY(-2px) !important;
+    }
 
-    /* Hover effects */
-    .stButton > button:hover {
-        opacity: 0.9 !important;
-        border: 1px solid white !important;
+    /* Button Specific Gradients for "Better" UX */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(1) button {
+        border-left: 5px solid #1565C0 !important;
+    }
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(2) button {
+        border-left: 5px solid #43A047 !important;
+    }
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(3) button {
+        border-left: 5px solid #ffa500 !important;
+    }
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(4) button {
+        border-left: 5px solid #f44336 !important;
+    }
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(5) button {
+        border-left: 5px solid #9c27b0 !important;
+    }
+
+    /* Inputs and Uploaders */
+    section[data-testid="stFileUploader"] {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px dashed rgba(255, 255, 255, 0.2);
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Centered Title
-st.markdown('<div class="header-text">🐾 Wild Animal Detection System</div>', unsafe_allow_html=True)
+# Centered Premium Header
+st.markdown('<div class="premium-header">� WILD ANIMAL SYSTEM</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-caption">AI-Powered Wildlife Surveillance & Safety Hub</div>', unsafe_allow_html=True)
 
 # Session State for navigation
 if 'page' not in st.session_state:
     st.session_state.page = "main"
 
-# Center Column for the Menu
-c1, menu_col, c3 = st.columns([1, 2, 1])
+# Menu Section
+c1, main_card, c3 = st.columns([0.1, 0.8, 0.1])
 
-with menu_col:
-    if st.button("Upload Images"):
+with main_card:
+    if st.button("📸 UPLOAD IMAGES"):
         st.session_state.page = "images"
-    if st.button("Upload Videos"):
+    if st.button("📹 UPLOAD VIDEOS"):
         st.session_state.page = "videos"
-    if st.button("Start Live Detection"):
+    if st.button("📡 START LIVE SCAN"):
         st.session_state.page = "live"
-    if st.button("Stop Live Detection"):
+    if st.button("🛑 STOP ANALYSIS"):
         st.session_state.page = "main"
         st.rerun()
-    if st.button("Exit"):
+    if st.button("❌ EXIT SYSTEM"):
         st.stop()
 
-st.markdown("---")
+st.markdown("<br>", unsafe_allow_html=True)
 
 # Execution Modules (Displayed below the menu)
 if st.session_state.page == "images":
