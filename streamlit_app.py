@@ -43,165 +43,139 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom Color Palette from original UI
-# Bg: #E3F2FD, Title Fg: #0D47A1, Buttons: #1565C0, #43A047, orange, red, purple
-
-st.markdown(f"""
-<style>
-    /* Main Background */
-    .stApp {{
-        background-color: #E3F2FD;
-    }}
-    
-    /* Header Style */
-    .main-title {{
-        color: #0D47A1;
-        font-family: 'Arial', sans-serif;
-        font-weight: bold;
-        font-size: 32px;
-        text-align: center;
-        padding: 20px;
-    }}
-    
-    /* Button Styles to match Tkinter */
-    div.stButton > button {{
-        width: 100%;
-        color: white;
-        font-weight: bold;
-        border: none;
-        border-radius: 5px;
-        padding: 10px;
-    }}
-    
-    /* Button Specific Colors */
-    /* Images - Blue */
-    [data-testid="stBaseButton-secondary"]:nth-child(1) {{
-        background-color: #1565C0;
-    }}
-    /* Videos - Green */
-    [data-testid="stBaseButton-secondary"]:nth-child(2) {{
-        background-color: #43A047;
-    }}
-    /* Live - Orange */
-    [data-testid="stBaseButton-secondary"]:nth-child(3) {{
-        background-color: orange;
-    }}
-    /* Stop - Red */
-    [data-testid="stBaseButton-secondary"]:nth-child(4) {{
-        background-color: red;
-    }}
-</style>
-""", unsafe_allow_html=True)
-
-st.markdown('<div class="main-title">🐾 Wild Animal Detection System</div>', unsafe_allow_html=True)
-st.markdown("---")
-
 # Load AI Model
 model = load_model()
 
+# Refined CSS for exact Tkinter Match
+st.markdown("""
+<style>
+    /* Main Background */
+    .stApp {
+        background-color: #E3F2FD;
+    }
+    
+    /* Header Style */
+    .header-text {
+        color: #0D47A1;
+        font-family: 'Arial', sans-serif;
+        font-weight: bold;
+        font-size: 28px;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    /* Center the menu buttons */
+    .stButton > button {
+        width: 100% !important;
+        height: 2.5em;
+        font-weight: bold;
+        color: white !important;
+        border-radius: 4px;
+        border: 1px solid rgba(0,0,0,0.1);
+        margin-bottom: 10px;
+        transition: transform 0.1s;
+    }
+    
+    .stButton > button:hover {
+        transform: scale(1.02);
+    }
+
+    /* Assigning exact colors based on button text/order */
+    /* Note: Streamlit button colors are hard to target individually by text, 
+       so we use a combination of sequence and custom classes if possible. 
+       For simplicity, we'll try order-based targeting in this layout. */
+    
+    /* 1. Upload Images - Blue */
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) button { background-color: #1565C0 !important; }
+    /* 2. Upload Videos - Green */
+    div[data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: #43A047 !important; }
+    /* 3. Live Detection - Orange */
+    div[data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: orange !important; }
+    /* 4. Stop - Red */
+    div[data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: red !important; }
+    /* 5. Exit - Purple */
+    div[data-testid="stVerticalBlock"] > div:nth-child(6) button { background-color: purple !important; }
+
+</style>
+""", unsafe_allow_html=True)
+
+# Centered Title
+st.markdown('<div class="header-text">🐾 Wild Animal Detection System</div>', unsafe_allow_html=True)
+
 # Session State for navigation
 if 'page' not in st.session_state:
-    st.session_state.page = "🏠 Home"
+    st.session_state.page = "main"
 
-# Layout: Column buttons (like the Tkinter menu)
-col1, col2, col3 = st.columns([1, 2, 1])
+# Center Column for the Menu
+c1, menu_col, c3 = st.columns([1, 2, 1])
 
-with col2:
+with menu_col:
     if st.button("Upload Images"):
-        st.session_state.page = "📸 Image Detection"
+        st.session_state.page = "images"
     if st.button("Upload Videos"):
-        st.session_state.page = "🎥 Video Detection"
+        st.session_state.page = "videos"
     if st.button("Start Live Detection"):
-        st.session_state.page = "🤳 Snapshot Detection"
-    if st.button("Stop Analysis"):
-        st.session_state.page = "🏠 Home"
+        st.session_state.page = "live"
+    if st.button("Stop Live Detection"):
+        st.session_state.page = "main"
+        st.rerun()
     if st.button("Exit"):
         st.stop()
 
 st.markdown("---")
 
-# Conditional Display based on page
-if st.session_state.page == "🏠 Home":
-    st.image("https://images.unsplash.com/photo-1546182990-dffeafbe841d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", caption="Wild Forest", use_container_width=True)
-    st.write("""
-    ### Detected Animals:
-    - 🐯 Tiger, 🦁 Lion, 🐆 Leopard
-    - 🐘 Elephant, 🦒 Giraffe, 🦓 Zebra
-    - 🐻 Bear, 🐺 Wolf
-    """)
-
-elif st.session_state.page == "📸 Image Detection":
-    st.header("Upload Image for Analysis")
-    uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+# Execution Modules (Displayed below the menu)
+if st.session_state.page == "images":
+    st.subheader("�️ Image Detection Mode")
+    uploaded_files = st.file_uploader("Select Images", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
     
-    if uploaded_file is not None:
-        file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-        image = cv2.imdecode(file_bytes, 1)
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), caption="Original Image", use_container_width=True)
+    if uploaded_files:
+        for uploaded_file in uploaded_files:
+            file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+            image = cv2.imdecode(file_bytes, 1)
             
-        with st.spinner("🔍 AI is analyzing..."):
-            annotated_img, alert = process_frame(image, model)
-            
-        with col2:
-            st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB), caption="Detection Results", use_container_width=True)
-        
-        if alert:
-            st.error("🚨 **WILD ANIMAL ALERT!** 🚨")
-            st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
-        else:
-            st.success("✅ Area appears to be safe.")
+            with st.spinner(f"Analyzing {uploaded_file.name}..."):
+                annotated_img, alert = process_frame(image, model)
+                st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB), caption=uploaded_file.name)
+                
+                if alert:
+                    st.error(f"🚨 WILD ANIMAL ALERT in {uploaded_file.name}!")
+                    st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
 
-elif st.session_state.page == "🎥 Video Detection":
-    st.header("Video Stream Analysis")
-    uploaded_video = st.file_uploader("Upload a video clip", type=["mp4", "avi", "mov"])
+elif st.session_state.page == "videos":
+    st.subheader("📹 Video Detection Mode")
+    uploaded_video = st.file_uploader("Select Videos", type=["mp4", "avi", "mov"])
     
-    if uploaded_video is not None:
+    if uploaded_video:
         tfile = tempfile.NamedTemporaryFile(delete=False) 
         tfile.write(uploaded_video.read())
-        
         cap = cv2.VideoCapture(tfile.name)
         st_frame = st.empty()
         
-        if st.button("Run Model on Video"):
-            while cap.isOpened():
-                ret, frame = cap.read()
-                if not ret:
-                    break
-                
-                frame = cv2.resize(frame, (640, 480))
-                annotated_frame, alert = process_frame(frame, model)
-                
-                st_frame.image(cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB))
-                
-                if alert:
-                    st.warning("🚨 **WILD ANIMAL SPOTTED!**")
-            
-            cap.release()
-            os.remove(tfile.name)
-            st.success("Video analysis completed.")
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret: break
+            frame = cv2.resize(frame, (640, 480))
+            annotated_frame, alert = process_frame(frame, model)
+            st_frame.image(cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB))
+            if alert:
+                st.warning("🚨 WILD ANIMAL DETECTED!")
+        
+        cap.release()
+        os.remove(tfile.name)
 
-elif st.session_state.page == "🤳 Snapshot Detection":
-    st.header("Real-time Snapshot")
-    img_file_buffer = st.camera_input("Snapshot for environment analysis")
+elif st.session_state.page == "live":
+    st.subheader("📺 Live Detection Mode")
+    img_file_buffer = st.camera_input("Camera Feed")
 
-    if img_file_buffer is not None:
+    if img_file_buffer:
         bytes_data = img_file_buffer.getvalue()
         cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
-        
-        with st.spinner("Analyzing snapshot..."):
-            annotated_img, alert = process_frame(cv2_img, model)
-            
-        st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB), caption="Snapshot Analysis")
-        
+        annotated_img, alert = process_frame(cv2_img, model)
+        st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
         if alert:
-            st.error("🚨 **DANGER!** Wild animal detected.")
+            st.error("🚨 DANGER! Wild animal detected.")
             st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
-        else:
-            st.success("✅ Area Clear.")
 
 st.markdown("---")
-st.caption("Built with ❤️ using Streamlit & YOLOv8 (Original UI Mirror)")
+st.caption("E:\\wild_animal_detection (Mirrored from Tkinter GUI)")
