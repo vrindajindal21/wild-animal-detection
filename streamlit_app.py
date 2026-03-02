@@ -199,9 +199,11 @@ if 'history' not in st.session_state:
 # ================= NAVIGATION LOGIC =================
 if st.session_state.page == "main":
     v = st.session_state.uploader_version
+    # Holders for uploads
     img_holder = st.empty()
     vid_holder = st.empty()
     
+    # 1/2. Styled File Uploaders with dynamic keys for clearing
     uploaded_images = img_holder.file_uploader("Upload Images", type=["jpg", "jpeg", "png"], accept_multiple_files=True, key=f"img_up_{v}")
     uploaded_video = vid_holder.file_uploader("Upload Videos", type=["mp4", "avi", "mov"], key=f"vid_up_{v}")
     
@@ -224,16 +226,15 @@ if st.session_state.page == "main":
                 # Show Result
                 st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
                 
-                # SAVE EVERYTHING to history for images
-                from datetime import datetime
-                st.session_state.history.append({
-                    "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB).copy(), 
-                    "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "type": "Image Scan"
-                })
-                
+                # AUTO-SAVE TO HISTORY if animal detected
                 if alert:
-                    st.toast(f"🚨 Wild Animal Detected!")
+                    from datetime import datetime
+                    st.session_state.history.append({
+                        "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB),
+                        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "type": "Image Detection"
+                    })
+                    st.toast(f"🚨 Wild Animal Detected! Saved to History.")
                     play_siren()
 
         if uploaded_video:
@@ -241,43 +242,53 @@ if st.session_state.page == "main":
             tfile.write(uploaded_video.read())
             cap = cv2.VideoCapture(tfile.name)
             
+            # Holders for Video Display
             vid_frame = st.empty()
-            siren_holder = st.empty()
-            last_siren_time = 0
+            siren_holder = st.empty() 
             last_save_time = 0
+            last_siren_time = 0
             
             while cap.isOpened():
                 ret, frame = cap.read()
                 if not ret: break
                 
+                import time
                 curr_time = time.time()
+                
                 frame = cv2.resize(frame, (640, 480))
                 annotated_frame, alert = process_frame(frame, model)
+                
+                # Update Video Frame
                 vid_frame.image(cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB))
                 
+                # AUTO-SAVE TO HISTORY if animal detected
                 if alert:
-                    # Siren every 10s
+                    # Siren Cooldown: 10 seconds
                     if curr_time - last_siren_time > 10.0:
-                        with siren_holder: play_siren()
+                        with siren_holder:
+                            play_siren()
                         last_siren_time = curr_time
                     
-                    # Auto-Save every 5s during video detection
+                    # History Save Cooldown: 5 seconds (Allows 'Saving All' major detections)
                     if curr_time - last_save_time > 5.0:
                         from datetime import datetime
                         st.session_state.history.append({
-                            "image": cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB).copy(),
-                            "time": datetime.now().strftime("%H:%M:%S"),
-                            "type": "Video Alert"
+                            "image": cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB),
+                            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            "type": "Video Detection"
                         })
-                        st.toast("🚨 Video detection-log saved!")
+                        st.toast("🚨 Detected Animal Saved to History!")
                         last_save_time = curr_time
 
+                # Small delay to keep UI responsive
                 time.sleep(0.01)
+
             cap.release()
             os.remove(tfile.name)
             st.success("✅ Video Processing Complete!")
             
     else:
+        # Show standard control buttons only when nothing is open
         if st.button("Start Live Detection"):
             st.session_state.page = "live"
             st.rerun()
@@ -297,16 +308,19 @@ elif st.session_state.page == "history":
         st.rerun()
 
     if not st.session_state.history:
-        st.info("No saved results yet. Start scanning to see your history!")
+        st.info("No saved results yet. Start scanning to save your alerts!")
     else:
-        tab1, tab2 = st.tabs(["📸 All Activity", "⚙️ Manage"])
+        tab1, tab2 = st.tabs(["📸 Detections", "⚙️ Manage"])
+        
         with tab1:
             for item in reversed(st.session_state.history):
-                with st.expander(f"🕒 {item.get('time', '')} - {item.get('type', 'Scan')}"):
+                with st.expander(f"🕒 {item['time']} - {item['type']}"):
                     st.image(item['image'], use_container_width=True)
+        
         with tab2:
             if st.button("🗑️ Clear All History"):
                 st.session_state.history = []
+                st.toast("History cleared!")
                 st.rerun()
 
 # ================= LIVE MODE =================
@@ -321,17 +335,18 @@ elif st.session_state.page == "live":
         bytes_data = img_file_buffer.getvalue()
         cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
         annotated_img, alert = process_frame(cv2_img, model)
+        
         st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
         
-        # Save EVERY live capture
-        from datetime import datetime
-        st.session_state.history.append({
-            "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB).copy(),
-            "time": datetime.now().strftime("%H:%M:%S"),
-            "type": "Live Capture"
-        })
+        # AUTO-SAVE LIVE DETECTION
         if alert:
-            st.toast("🚨 Wild Animal Detected!")
+            from datetime import datetime
+            st.session_state.history.append({
+                "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB),
+                "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "type": "Live Detection"
+            })
+            st.toast("🚨 Live Wild Animal Detected! Saved to History.")
             play_siren()
 
 st.markdown("<br><br>", unsafe_allow_html=True)
