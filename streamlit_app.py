@@ -170,6 +170,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="original-title">🐾 Wild Animal Detection System</div>', unsafe_allow_html=True)
+st.markdown("<hr style='border: 1px solid #0D47A1; margin-bottom: 25px;'>", unsafe_allow_html=True)
 
 if 'page' not in st.session_state:
     st.session_state.page = "main"
@@ -221,18 +222,37 @@ if st.session_state.page == "main":
                 if alert: st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
 
         if uploaded_video:
-            tfile = tempfile.NamedTemporaryFile(delete=False) 
-            tfile.write(uploaded_video.read())
-            cap = cv2.VideoCapture(tfile.name)
+            # Generate a temporary file path that OpenCV can read
+            suffix = "." + uploaded_video.name.split(".")[-1]
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tfile:
+                tfile.write(uploaded_video.read())
+                temp_filename = tfile.name
+                
+            cap = cv2.VideoCapture(temp_filename)
             st_frame = st.empty()
-            while cap.isOpened():
+            
+            # Simple stop control
+            stop_video = st.button("🛑 Stop Video Playback")
+            
+            while cap.isOpened() and not stop_video:
                 ret, frame = cap.read()
                 if not ret: break
+                
+                # Resize for smoother processing
                 frame = cv2.resize(frame, (640, 480))
                 annotated_frame, alert = process_frame(frame, model)
+                
+                # Update visual
                 st_frame.image(cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB))
+                
+                # Sound alert for video too
+                if alert: st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
+                
             cap.release()
-            os.remove(tfile.name)
+            try:
+                os.remove(temp_filename)
+            except:
+                pass
             
     else:
         # Show standard control buttons only when nothing is open
