@@ -232,17 +232,22 @@ if st.session_state.page == "main":
                 # Show Result
                 st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
                 
-                # AUTO-SAVE TO HISTORY tracking unique files
-                if alert and file_id not in st.session_state.processed_files:
+                # SAVE TO HISTORY (Every Image Uploaded)
+                if file_id not in st.session_state.processed_files:
                     from datetime import datetime
+                    detection_type = "🚨 Image Detection" if alert else "✅ Image Scan (Safe)"
                     st.session_state.history.append({
                         "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB),
                         "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "type": "Image Detection"
+                        "type": detection_type
                     })
                     st.session_state.processed_files.add(file_id)
-                    st.toast(f"🚨 Wild Animal Detected! Saved to History.")
-                    play_siren()
+                    
+                    if alert:
+                        st.toast(f"🚨 Wild Animal Detected! Saved to History.")
+                        play_siren()
+                    else:
+                        st.toast(f"📸 Image Saved to History.")
 
         if uploaded_video:
             tfile = tempfile.NamedTemporaryFile(delete=False) 
