@@ -80,22 +80,23 @@ st.markdown("""
         transform: scale(1.02);
     }
 
-    /* Assigning exact colors based on button text/order */
-    /* Note: Streamlit button colors are hard to target individually by text, 
-       so we use a combination of sequence and custom classes if possible. 
-       For simplicity, we'll try order-based targeting in this layout. */
-    
-    /* 1. Upload Images - Blue */
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) button { background-color: #1565C0 !important; }
-    /* 2. Upload Videos - Green */
-    div[data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: #43A047 !important; }
-    /* 3. Live Detection - Orange */
-    div[data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: orange !important; }
-    /* 4. Stop - Red */
-    div[data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: red !important; }
-    /* 5. Exit - Purple */
-    div[data-testid="stVerticalBlock"] > div:nth-child(6) button { background-color: purple !important; }
+    /* Button Specific Colors - Targeted by index */
+    /* Images - Blue */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(1) button { background-color: #1565C0 !important; }
+    /* Videos - Green */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(2) button { background-color: #43A047 !important; }
+    /* Live - Orange */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: orange !important; }
+    /* Stop - Red */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: red !important; }
+    /* Exit - Purple */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: purple !important; }
 
+    /* Hover effects */
+    .stButton > button:hover {
+        opacity: 0.9 !important;
+        border: 1px solid white !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
