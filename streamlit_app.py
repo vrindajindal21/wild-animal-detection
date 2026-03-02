@@ -36,13 +36,6 @@ def process_frame(frame, model):
     return annotated_frame, alert_triggered
 
 # ================= MAIN APP =================
-st.set_page_config(
-    page_title="Wild Animal Detection System", 
-    page_icon="🐯", 
-    layout="centered",
-    initial_sidebar_state="collapsed"
-)
-
 # ================= MAIN APP =================
 st.set_page_config(
     page_title="Wild Animal Detection System", 
@@ -162,7 +155,7 @@ elif st.session_state.page == "videos":
         st.session_state.page = "main"
         st.rerun()
 
-    uploaded_video = st.file_uploader("Select Video", type=["mp4", "avi", "mov"])
+    uploaded_video = st.file_uploader("Upload Video File", type=["mp4", "avi", "mov"])
     if uploaded_video:
         tfile = tempfile.NamedTemporaryFile(delete=False) 
         tfile.write(uploaded_video.read())
