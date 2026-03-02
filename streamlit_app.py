@@ -158,6 +158,11 @@ st.markdown("""
     /* 5. Exit - Purple */
     [data-testid="stVerticalBlock"] > div:nth-child(7) button { background-color: #8E24AA !important; }
 
+    /* Hide the Uploaded File List (The redundant blue bars) */
+    [data-testid="stFileUploaderUploadedFileList"] {
+        display: none !important;
+    }
+
     header, footer, #MainMenu { visibility: hidden !important; }
 </style>
 """, unsafe_allow_html=True)
@@ -167,53 +172,61 @@ st.markdown('<div class="original-title">🐾 Wild Animal Detection System</div>
 if 'page' not in st.session_state:
     st.session_state.page = "main"
 
+# ================= NAVIGATION LOGIC =================
+# If files are uploaded, we stay in "main" but logic will handle the "Open" state
 # ================= MAIN MENU =================
 if st.session_state.page == "main":
-    # 1. Image Uploader (Styled as Blue Button)
-    uploaded_images = st.file_uploader("Upload Images", type=["jpg", "jpeg", "png"], accept_multiple_files=True, key="img_up")
+    # Holders for uploads
+    img_holder = st.empty()
+    vid_holder = st.empty()
     
-    # 2. Video Uploader (Styled as Green Button)
-    uploaded_video = st.file_uploader("Upload Videos", type=["mp4", "avi", "mov"], key="vid_up")
+    # 1/2. Styled File Uploaders
+    uploaded_images = img_holder.file_uploader("Upload Images", type=["jpg", "jpeg", "png"], accept_multiple_files=True, key="img_up")
+    uploaded_video = vid_holder.file_uploader("Upload Videos", type=["mp4", "avi", "mov"], key="vid_up")
     
-    # 3. Live Detection
-    if st.button("Start Live Detection"):
-        st.session_state.page = "live"
-        st.rerun()
+    # --- IF IMAGES/VIDEO UPLOADED: SKIP REST OF MENU AND SHOW RESULTS ---
+    if uploaded_images or uploaded_video:
+        # Hide the uploaders to focus on result
+        img_holder.empty()
+        vid_holder.empty()
         
-    # 4. Stop
-    if st.button("Stop Live Detection"):
-        st.session_state.page = "main"
-        # Clear uploads on stop
-        st.rerun()
-
-    # 5. Exit
-    if st.button("Exit"):
-        st.stop()
-
-    # --- Result Display Section (Directly on Main Page) ---
-    if uploaded_images:
+        # Back Button at Top
+        if st.button("⬅️ Close & Back to Menu", key="back_btn"):
+            st.rerun() # This will clear the session-based file uploader
+            
         st.markdown("---")
-        for uploaded_file in uploaded_images:
-            file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-            image = cv2.imdecode(file_bytes, 1)
-            annotated_img, alert = process_frame(image, model)
-            st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
-            if alert: st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
+        
+        if uploaded_images:
+            for uploaded_file in uploaded_images:
+                file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+                image = cv2.imdecode(file_bytes, 1)
+                annotated_img, alert = process_frame(image, model)
+                st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
+                if alert: st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
 
-    if uploaded_video:
-        st.markdown("---")
-        tfile = tempfile.NamedTemporaryFile(delete=False) 
-        tfile.write(uploaded_video.read())
-        cap = cv2.VideoCapture(tfile.name)
-        st_frame = st.empty()
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret or st.button("Stop Playback", key="stop_vid"): break
-            frame = cv2.resize(frame, (640, 480))
-            annotated_frame, alert = process_frame(frame, model)
-            st_frame.image(cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB))
-        cap.release()
-        os.remove(tfile.name)
+        if uploaded_video:
+            tfile = tempfile.NamedTemporaryFile(delete=False) 
+            tfile.write(uploaded_video.read())
+            cap = cv2.VideoCapture(tfile.name)
+            st_frame = st.empty()
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret: break
+                frame = cv2.resize(frame, (640, 480))
+                annotated_frame, alert = process_frame(frame, model)
+                st_frame.image(cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB))
+            cap.release()
+            os.remove(tfile.name)
+            
+    else:
+        # Show standard control buttons only when nothing is open
+        if st.button("Start Live Detection"):
+            st.session_state.page = "live"
+            st.rerun()
+        if st.button("Stop Live Detection"):
+            st.rerun()
+        if st.button("Exit"):
+            st.stop()
 
 # ================= LIVE MODE =================
 elif st.session_state.page == "live":
