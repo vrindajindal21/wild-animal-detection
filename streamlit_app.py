@@ -95,13 +95,17 @@ st.markdown("""
         justify-content: center;
     }
 
-    /* Specific Hex Colors from original GUI */
-    /* Targetting by sequence in the main block */
-    [data-testid="stVerticalBlock"] > div:nth-child(2) button { background-color: #1976D2 !important; } /* Upload Images */
-    [data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: #4CAF50 !important; } /* Upload Videos */
-    [data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: #FF9800 !important; } /* Start Live */
-    [data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: #F44336 !important; } /* Stop Live */
-    [data-testid="stVerticalBlock"] > div:nth-child(6) button { background-color: #8E24AA !important; } /* Exit */
+    /* Specific Hex Colors from original GUI - Indexing fixed */
+    /* 1. Upload Images - Blue */
+    [data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: #1976D2 !important; }
+    /* 2. Upload Videos - Green */
+    [data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: #4CAF50 !important; }
+    /* 3. Live Detection - Orange */
+    [data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: #FF9800 !important; }
+    /* 4. Stop - Red */
+    [data-testid="stVerticalBlock"] > div:nth-child(6) button { background-color: #F44336 !important; }
+    /* 5. Exit - Purple */
+    [data-testid="stVerticalBlock"] > div:nth-child(7) button { background-color: #8E24AA !important; }
 
     /* Hide Streamlit components */
     header, footer, #MainMenu { visibility: hidden !important; }
@@ -129,14 +133,15 @@ if st.session_state.page == "main":
     if st.button("Exit"):
         st.stop()
 
-# Execution Modules
+# Execution Modules - Simplified for "Direct" feel
 if st.session_state.page == "images":
-    st.markdown('<div style="text-align:center; color:#0D47A1; font-weight:bold; font-size:20px;">🖼️ Image Mode Access</div>', unsafe_allow_html=True)
-    if st.button("⬅️ Back to Menu"):
-        st.session_state.page = "main"
-        st.rerun()
+    col1, col2 = st.columns([0.8, 0.2])
+    with col2:
+        if st.button("✖", help="Back to Menu"):
+            st.session_state.page = "main"
+            st.rerun()
     
-    uploaded_files = st.file_uploader("Select Images", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("📂 Drop images here to start...", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
     if uploaded_files:
         for uploaded_file in uploaded_files:
             file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
@@ -146,12 +151,13 @@ if st.session_state.page == "images":
             if alert: st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
 
 elif st.session_state.page == "videos":
-    st.markdown('<div style="text-align:center; color:#0D47A1; font-weight:bold; font-size:20px;">📹 Video Mode Access</div>', unsafe_allow_html=True)
-    if st.button("⬅️ Back to Menu"):
-        st.session_state.page = "main"
-        st.rerun()
+    col1, col2 = st.columns([0.8, 0.2])
+    with col2:
+        if st.button("✖", help="Back to Menu"):
+            st.session_state.page = "main"
+            st.rerun()
 
-    uploaded_video = st.file_uploader("Upload Video File", type=["mp4", "avi", "mov"])
+    uploaded_video = st.file_uploader("📂 Drop video here to analyze...", type=["mp4", "avi", "mov"])
     if uploaded_video:
         tfile = tempfile.NamedTemporaryFile(delete=False) 
         tfile.write(uploaded_video.read())
