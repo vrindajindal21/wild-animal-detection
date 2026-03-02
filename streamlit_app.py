@@ -7,12 +7,27 @@ from PIL import Image
 import os
 import tempfile
 
+import base64
+
 # ================= CONFIG =================
 MODEL_PATH = "yolov8n.pt"
 ALERT_SOUND = "siren-alert-96052.mp3"
 WILD_CLASSES = ["bear", "elephant", "tiger", "lion", "leopard", "wolf", "giraffe", "zebra"]
 
 # ================= HELPER FUNCTIONS =================
+def play_siren():
+    """Bypasses buggy st.audio using HTML/Base64 directly"""
+    if os.path.exists(ALERT_SOUND):
+        with open(ALERT_SOUND, "rb") as f:
+            data = f.read()
+            b64 = base64.b64encode(data).decode()
+            md = f"""
+                <audio autoplay="true" style="display:none;">
+                <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+                </audio>
+                """
+            st.markdown(md, unsafe_allow_html=True)
+
 @st.cache_resource
 def load_model():
     # Use the model in the current project directory
@@ -211,14 +226,13 @@ if st.session_state.page == "main":
                 # AUTO-SAVE TO HISTORY if animal detected
                 if alert:
                     from datetime import datetime
-                    now_str = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
                     st.session_state.history.append({
                         "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB),
                         "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "type": "Auto-Saved Image Detection"
+                        "type": "Image Detection"
                     })
                     st.toast(f"🚨 Wild Animal Detected! Saved to History.")
-                    st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True, key=f"audio_img_{now_str}_{i}")
+                    play_siren()
 
         if uploaded_video:
             tfile = tempfile.NamedTemporaryFile(delete=False) 
@@ -227,7 +241,6 @@ if st.session_state.page == "main":
             
             # Holders for Video Display
             vid_frame = st.empty()
-            audio_placeholder = st.empty()
             has_saved_video_detection = False 
             last_siren_time = 0
             
@@ -248,9 +261,7 @@ if st.session_state.page == "main":
                 if alert:
                     # Siren Throttle (Only play every 3.5 seconds)
                     if curr_time - last_siren_time > 3.5:
-                        from datetime import datetime
-                        now_str = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-                        audio_placeholder.audio(ALERT_SOUND, format="audio/mp3", autoplay=True, key=f"audio_vid_{now_str}")
+                        play_siren()
                         last_siren_time = curr_time
                         
                     if not has_saved_video_detection:
@@ -258,7 +269,7 @@ if st.session_state.page == "main":
                         st.session_state.history.append({
                             "image": cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB),
                             "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            "type": "Auto-Saved Video Detection"
+                            "type": "Video Detection"
                         })
                         st.toast("🚨 First Video Detection Saved to History!")
                         has_saved_video_detection = True
@@ -324,13 +335,12 @@ elif st.session_state.page == "live":
         # AUTO-SAVE LIVE DETECTION
         if alert:
             from datetime import datetime
-            now_str = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
             st.session_state.history.append({
                 "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB),
                 "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "type": "Auto-Saved Live Detection"
+                "type": "Live Detection"
             })
             st.toast("🚨 Live Wild Animal Detected! Saved to History.")
-            st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True, key=f"live_{now_str}")
+            play_siren()
 
 st.markdown("<br><br>", unsafe_allow_html=True)
