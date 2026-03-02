@@ -155,8 +155,10 @@ st.markdown("""
     [data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: #FF9800 !important; }
     /* 4. Stop - Red */
     [data-testid="stVerticalBlock"] > div:nth-child(6) button { background-color: #F44336 !important; }
-    /* 5. Exit - Purple */
-    [data-testid="stVerticalBlock"] > div:nth-child(7) button { background-color: #8E24AA !important; }
+    /* 5. History - Yellow */
+    [data-testid="stVerticalBlock"] > div:nth-child(7) button { background-color: #FBC02D !important; }
+    /* 6. Exit - Purple */
+    [data-testid="stVerticalBlock"] > div:nth-child(8) button { background-color: #8E24AA !important; }
 
     /* Hide the Uploaded File List (The redundant blue bars) */
     [data-testid="stFileUploaderUploadedFileList"] {
@@ -173,6 +175,8 @@ if 'page' not in st.session_state:
     st.session_state.page = "main"
 if 'uploader_version' not in st.session_state:
     st.session_state.uploader_version = 0
+if 'history' not in st.session_state:
+    st.session_state.history = []
 
 # ================= NAVIGATION LOGIC =================
 if st.session_state.page == "main":
@@ -196,11 +200,24 @@ if st.session_state.page == "main":
         st.markdown("---")
         
         if uploaded_images:
-            for uploaded_file in uploaded_images:
+            for i, uploaded_file in enumerate(uploaded_images):
                 file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
                 image = cv2.imdecode(file_bytes, 1)
                 annotated_img, alert = process_frame(image, model)
-                st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
+                
+                # Show Result
+                res_col1, res_col2 = st.columns([0.7, 0.3])
+                with res_col1:
+                    st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
+                with res_col2:
+                    if st.button(f"💾 Save Result {i+1}", key=f"save_{i}"):
+                        from datetime import datetime
+                        st.session_state.history.append({
+                            "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB),
+                            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            "type": "Image Scan"
+                        })
+                        st.toast("✅ Saved to History!")
                 if alert: st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
 
         if uploaded_video:
@@ -224,8 +241,34 @@ if st.session_state.page == "main":
             st.rerun()
         if st.button("Stop Live Detection"):
             st.rerun()
+        if st.button("View Saved History"):
+            st.session_state.page = "history"
+            st.rerun()
         if st.button("Exit"):
             st.stop()
+
+# ================= HISTORY PAGE =================
+elif st.session_state.page == "history":
+    st.markdown('<div class="original-title">📚 Activity History</div>', unsafe_allow_html=True)
+    if st.button("⬅️ Back to Home"):
+        st.session_state.page = "main"
+        st.rerun()
+
+    if not st.session_state.history:
+        st.info("No saved results yet. Start scanning to save your alerts!")
+    else:
+        tab1, tab2 = st.tabs(["📸 Detections", "⚙️ Manage"])
+        
+        with tab1:
+            for item in reversed(st.session_state.history):
+                with st.expander(f"🕒 {item['time']} - {item['type']}"):
+                    st.image(item['image'], use_container_width=True)
+        
+        with tab2:
+            if st.button("🗑️ Clear All History"):
+                st.session_state.history = []
+                st.toast("History cleared!")
+                st.rerun()
 
 # ================= LIVE MODE =================
 elif st.session_state.page == "live":
@@ -239,7 +282,20 @@ elif st.session_state.page == "live":
         bytes_data = img_file_buffer.getvalue()
         cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
         annotated_img, alert = process_frame(cv2_img, model)
-        st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
+        
+        res_col1, res_col2 = st.columns([0.8, 0.2])
+        with res_col1:
+            st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
+        with res_col2:
+            if st.button("💾 Save Scan"):
+                from datetime import datetime
+                st.session_state.history.append({
+                    "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB),
+                    "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "type": "Live Scan"
+                })
+                st.toast("✅ Saved to History!")
+        
         if alert: st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
 
 st.markdown("<br><br>", unsafe_allow_html=True)
