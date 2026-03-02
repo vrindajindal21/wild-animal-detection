@@ -54,131 +54,115 @@ st.set_page_config(
 # Load AI Model
 model = load_model()
 
-# ================= CSS: PROFESSIONAL WILDLIFE DASHBOARD =================
+# ================= CSS: ORIGINAL GUI MIRROR =================
 st.markdown("""
 <style>
-    /* Professional Nature Palette */
-    :root {
-        --primary: #1e3d2f;    /* Dark Forest Green */
-        --secondary: #2e7d32;  /* Leaf Green */
-        --accent: #ff9800;     /* Warning Orange */
-        --danger: #d32f2f;     /* Alert Red */
-        --bg: #f5f7f8;         /* Soft Gray Background */
-        --text: #1a1a1a;
-    }
-
+    /* Exact Background */
     .stApp {
-        background: radial-gradient(circle at top right, #e8f5e9, #f5f7f8);
-        color: var(--text);
+        background-color: #E3F2FD !important;
     }
 
-    /* Modern Card-Style Menu Container */
-    [data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] {
-        background: white;
-        padding: 30px;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        border: 1px solid rgba(0,0,0,0.05);
+    /* Remove top padding of the first block */
+    [data-testid="stVerticalBlock"] > div:first-child {
+        padding-top: 50px !important;
     }
 
-    /* Title Styling */
-    .dashboard-title {
-        color: var(--primary);
-        font-weight: 800;
-        font-size: 34px;
+    /* Exact Title Styling from Screen */
+    .original-title {
+        color: #0D47A1;
+        font-family: 'Arial Black', sans-serif;
+        font-weight: 900;
+        font-size: 32px;
         text-align: center;
-        margin-bottom: 8px;
-        letter-spacing: -0.5px;
-    }
-    .dashboard-subtitle {
-        color: #666;
-        text-align: center;
-        font-size: 16px;
-        margin-bottom: 40px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
     }
 
-    /* Premium Button Design */
+    /* Exact Tkinter-style Buttons */
     div.stButton > button {
-        width: 100% !important;
-        background-color: white !important;
-        color: var(--primary) !important;
-        border: 1.5px solid #eee !important;
-        border-radius: 12px !important;
-        padding: 20px !important;
-        font-weight: 600 !important;
-        font-size: 17px !important;
-        text-align: left !important;
-        display: flex !important;
-        justify-content: flex-start !important;
-        align-items: center !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+        width: 300px !important;
+        height: 2.5em !important;
+        color: white !important;
+        font-weight: bold !important;
+        font-family: 'Arial', sans-serif !important;
+        font-size: 16px !important;
+        border: 2px solid rgba(0,0,0,0.1) !important;
+        border-radius: 4px !important;
+        margin: 0 auto !important;
+        display: block !important;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.2) !important;
     }
 
-    div.stButton > button:hover {
-        border-color: var(--secondary) !important;
-        background-color: #f1f8f1 !important;
-        transform: translateX(5px) !important;
-        box-shadow: 4px 4px 15px rgba(46, 125, 50, 0.1) !important;
+    /* Ensure buttons are centered */
+    div.stButton {
+        display: flex;
+        justify-content: center;
     }
 
-    /* Logic to show color intent on left border */
-    div[data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(1) button { border-left: 6px solid #1E88E5 !important; }
-    div[data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(2) button { border-left: 6px solid #43A047 !important; }
-    div[data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(3) button { border-left: 6px solid #FB8C00 !important; }
-    div[data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(4) button { border-left: 6px solid #E53935 !important; }
-    div[data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(5) button { border-left: 6px solid #8E24AA !important; }
+    /* Specific Hex Colors from original GUI */
+    /* 1. Upload Images - Blue */
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) button { background-color: #1976D2 !important; }
+    /* 2. Upload Videos - Green */
+    div[data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: #4CAF50 !important; }
+    /* 3. Live Detection - Orange */
+    div[data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: #FF9800 !important; }
+    /* 4. Stop - Red */
+    div[data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: #F44336 !important; }
+    /* 5. Exit - Purple */
+    div[data-testid="stVerticalBlock"] > div:nth-child(6) button { background-color: #8E24AA !important; }
 
-    /* Clean Up Streamlit Defaults */
-    header, footer { visibility: hidden !important; }
-    #MainMenu { visibility: hidden; }
+    /* Hide Streamlit components */
+    header, footer, #MainMenu { visibility: hidden !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# Main Dashboard Frame
-st.markdown('<div class="dashboard-title">🐯 Wildlife Safety Hub</div>', unsafe_allow_html=True)
-st.markdown('<div class="dashboard-subtitle">Active Surveillance & Detection System</div>', unsafe_allow_html=True)
+# Centered Title (with paw icons)
+st.markdown('<div class="original-title">🐾 Wild Animal Detection System</div>', unsafe_allow_html=True)
 
 # Session State for navigation
 if 'page' not in st.session_state:
     st.session_state.page = "main"
 
-# Dashboard Menu Section
-c1, menu_col, c3 = st.columns([0.1, 0.8, 0.1])
-
-with menu_col:
-    if st.button("📸  Analyze Images"):
+# Menu Container (Center aligned)
+if st.session_state.page == "main":
+    if st.button("Upload Images"):
         st.session_state.page = "images"
-    if st.button("🎥  Scan Videos"):
+    if st.button("Upload Videos"):
         st.session_state.page = "videos"
-    if st.button("📡  Live Surveillance"):
+    if st.button("Start Live Detection"):
         st.session_state.page = "live"
-    if st.button("🛑  Deactivate System"):
+    if st.button("Stop Live Detection"):
         st.session_state.page = "main"
         st.rerun()
-    if st.button("🚪  Exit Application"):
+    if st.button("Exit"):
         st.stop()
-
-st.markdown("<br>", unsafe_allow_html=True)
 
 # Execution Modules
 if st.session_state.page == "images":
-    st.markdown('<div style="color:#0D47A1; font-weight:bold;">Select Images</div>', unsafe_allow_html=True)
-    uploaded_files = st.file_uploader("", type=["jpg", "jpeg", "png"], accept_multiple_files=True, label_visibility="collapsed")
+    st.markdown('<div style="text-align:center; color:#0D47A1; font-weight:bold; font-size:20px;">🖼️ Image Mode Access</div>', unsafe_allow_html=True)
+    if st.button("⬅️ Back to Menu"):
+        st.session_state.page = "main"
+        st.rerun()
     
+    uploaded_files = st.file_uploader("Select Images", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
     if uploaded_files:
         for uploaded_file in uploaded_files:
             file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
             image = cv2.imdecode(file_bytes, 1)
             annotated_img, alert = process_frame(image, model)
-            st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB), caption=uploaded_file.name)
-            if alert:
-                st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
+            st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
+            if alert: st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
 
 elif st.session_state.page == "videos":
-    st.markdown('<div style="color:#0D47A1; font-weight:bold;">Select Videos</div>', unsafe_allow_html=True)
-    uploaded_video = st.file_uploader("", type=["mp4", "avi", "mov"], label_visibility="collapsed")
-    
+    st.markdown('<div style="text-align:center; color:#0D47A1; font-weight:bold; font-size:20px;">📹 Video Mode Access</div>', unsafe_allow_html=True)
+    if st.button("⬅️ Back to Menu"):
+        st.session_state.page = "main"
+        st.rerun()
+
+    uploaded_video = st.file_uploader("Select Video", type=["mp4", "avi", "mov"])
     if uploaded_video:
         tfile = tempfile.NamedTemporaryFile(delete=False) 
         tfile.write(uploaded_video.read())
@@ -194,14 +178,17 @@ elif st.session_state.page == "videos":
         os.remove(tfile.name)
 
 elif st.session_state.page == "live":
-    st.markdown('<div style="color:#0D47A1; font-weight:bold;">Live Detection</div>', unsafe_allow_html=True)
-    img_file_buffer = st.camera_input("")
+    st.markdown('<div style="text-align:center; color:#0D47A1; font-weight:bold; font-size:20px;">📡 Live Mode Access</div>', unsafe_allow_html=True)
+    if st.button("⬅️ Back to Menu"):
+        st.session_state.page = "main"
+        st.rerun()
+
+    img_file_buffer = st.camera_input("Scanner Active")
     if img_file_buffer:
         bytes_data = img_file_buffer.getvalue()
         cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
         annotated_img, alert = process_frame(cv2_img, model)
         st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
-        if alert:
-            st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
+        if alert: st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
 
 st.markdown("<br><br>", unsafe_allow_html=True)
