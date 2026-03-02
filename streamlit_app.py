@@ -54,69 +54,59 @@ st.set_page_config(
 # Load AI Model
 model = load_model()
 
-# ================= CSS: IMPROVED TKINTER MIRROR =================
+# ================= CSS: STABLE TKINTER MIRROR =================
 st.markdown("""
 <style>
-    /* Main Background */
+    /* Force main background */
     .stApp {
         background-color: #E3F2FD !important;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
     }
 
-    /* Fix for White Buttons in Screenshot */
-    div.stButton > button {
+    /* Target all buttons directly to ensure they are not white */
+    .stButton > button {
         width: 100% !important;
         color: white !important;
-        font-weight: 600 !important;
+        font-weight: bold !important;
+        border-radius: 4px !important;
+        border: 1px solid rgba(0,0,0,0.2) !important;
+        padding: 0.5rem 1rem !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+    
+    /* Ensure text inside button is white */
+    .stButton > button p {
+        color: white !important;
+        margin: 0 !important;
         font-size: 16px !important;
-        border: none !important;
-        border-radius: 8px !important;
-        padding: 12px 24px !important;
-        margin-bottom: 12px !important;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
-        transition: all 0.2s ease !important;
     }
 
-    div.stButton > button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 12px rgba(0,0,0,0.15) !important;
-        filter: brightness(1.1);
-    }
-
-    /* Assigning Colors using specialized selectors */
-    /* Images - Blue */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(1) button,
-    div.stButton button:contains("Upload Images") { background-color: #1565C0 !important; }
+    /* Assign Colors using a more reliable index-based approach */
+    /* We target the buttons by their order in the centered column */
     
-    /* Videos - Green */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(2) button,
-    div.stButton button:contains("Upload Videos") { background-color: #43A047 !important; }
-    
-    /* Live - Orange */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(3) button,
-    div.stButton button:contains("Start Live") { background-color: #FF9800 !important; }
-    
-    /* Stop - Red */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(4) button,
-    div.stButton button:contains("Stop Live") { background-color: #D32F2F !important; }
-    
-    /* Exit - Purple */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(5) button,
-    div.stButton button:contains("Exit") { background-color: #7B1FA2 !important; }
+    /* 1. Upload Images - Blue */
+    [data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(1) button { background-color: #1565C0 !important; }
+    /* 2. Upload Videos - Green */
+    [data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(2) button { background-color: #43A047 !important; }
+    /* 3. Live Detection - Orange */
+    [data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: #FF9800 !important; }
+    /* 4. Stop - Red */
+    [data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: #D32F2F !important; }
+    /* 5. Exit - Purple */
+    [data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: #7B1FA2 !important; }
 
     /* Title Styling */
     .tk-label {
         color: #0D47A1;
-        font-weight: 800;
-        font-size: 32px;
+        font-weight: bold;
+        font-size: 28px;
         text-align: center;
-        margin-bottom: 40px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        margin-bottom: 30px;
     }
 
-    /* Clean up headers */
-    header { visibility: hidden; }
-    footer { visibility: hidden; }
+    /* Hide default streamlit clutter */
+    header, footer { visibility: hidden !important; }
 </style>
 """, unsafe_allow_html=True)
 
