@@ -54,175 +54,128 @@ st.set_page_config(
 # Load AI Model
 model = load_model()
 
-# Premium Ultra-Modern Nature CSS
+# ================= CSS: EXACT TKINTER MIRROR =================
 st.markdown("""
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
-    /* Global Styles */
+    /* Exact Background from Tkinter */
     .stApp {
-        background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-        font-family: 'Outfit', sans-serif !important;
-        color: white;
+        background-color: #E3F2FD !important;
+        font-family: 'Arial', sans-serif !important;
     }
 
-    /* Container Styling */
+    /* Fixed Width Centered Container */
     [data-testid="stVerticalBlock"] > div:first-child {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(15px);
-        border-radius: 24px;
-        padding: 40px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        margin-top: 20px;
+        background-color: #E3F2FD !important;
+        border: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        padding-top: 10px !important;
     }
 
-    /* Header */
-    .premium-header {
-        background: linear-gradient(to right, #ffd452 0%, #f76b1c 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-size: 42px;
-        font-weight: 800;
+    /* Title Label Styling */
+    .tk-label {
+        color: #0D47A1;
+        font-weight: bold;
+        font-size: 24px;
         text-align: center;
-        letter-spacing: -1px;
-        margin-bottom: 5px;
-    }
-    .sub-caption {
-        color: rgba(255, 255, 255, 0.7);
-        text-align: center;
-        font-size: 16px;
-        margin-bottom: 40px;
-        font-weight: 300;
+        margin-bottom: 20px;
+        padding: 10px;
     }
 
-    /* Button Overrides */
+    /* Standard Tkinter-style Buttons */
     div.stButton > button {
-        background: rgba(255, 255, 255, 0.1) !important;
-        color: white !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 12px !important;
-        height: 3.5em !important;
-        font-size: 18px !important;
-        font-weight: 600 !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 15px !important;
         width: 100% !important;
+        color: white !important;
+        font-weight: bold !important;
+        border: 1px solid rgba(0,0,0,0.1) !important;
+        border-radius: 2px !important;
+        padding: 8px !important;
+        font-family: 'Arial', sans-serif !important;
+        margin-bottom: 5px !important;
     }
 
-    div.stButton > button:hover {
-        background: rgba(255, 255, 255, 0.2) !important;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
-        box-shadow: 0 0 20px rgba(255, 212, 82, 0.2) !important;
-        transform: translateY(-2px) !important;
-    }
+    /* Specific Button Colors to match Button(bg='...') */
+    /* Button Indexing in the main block */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(2) button { background-color: #1565C0 !important; } /* Upload Images */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: #43A047 !important; } /* Upload Videos */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: orange !important; }  /* Start Live */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: red !important; }     /* Stop Live */
+    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(6) button { background-color: purple !important; }  /* Exit */
 
-    /* Button Specific Gradients for "Better" UX */
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(1) button {
-        border-left: 5px solid #1565C0 !important;
-    }
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(2) button {
-        border-left: 5px solid #43A047 !important;
-    }
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(3) button {
-        border-left: 5px solid #ffa500 !important;
-    }
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(4) button {
-        border-left: 5px solid #f44336 !important;
-    }
-    div[data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] > div:nth-child(5) button {
-        border-left: 5px solid #9c27b0 !important;
-    }
-
-    /* Inputs and Uploaders */
-    section[data-testid="stFileUploader"] {
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 12px;
-        padding: 20px;
-        border: 1px dashed rgba(255, 255, 255, 0.2);
-    }
+    /* Hide Streamlit elements to keep it "GUI-only" */
+    header { visibility: hidden; }
+    #MainMenu { visibility: hidden; }
+    footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
-# Centered Premium Header
-st.markdown('<div class="premium-header">� WILD ANIMAL SYSTEM</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-caption">AI-Powered Wildlife Surveillance & Safety Hub</div>', unsafe_allow_html=True)
+# Centered Title (Tkinter Label)
+st.markdown('<div class="tk-label">🐾 Wild Animal Detection System</div>', unsafe_allow_html=True)
 
 # Session State for navigation
 if 'page' not in st.session_state:
     st.session_state.page = "main"
 
-# Menu Section
-c1, main_card, c3 = st.columns([0.1, 0.8, 0.1])
+# Menu Section (Centered via columns to limit width like Tkinter's width=25)
+mc1, menu_col, mc3 = st.columns([1, 1.2, 1])
 
-with main_card:
-    if st.button("📸 UPLOAD IMAGES"):
+with menu_col:
+    # We use st.button but the CSS above will force the colors
+    if st.button("Upload Images"):
         st.session_state.page = "images"
-    if st.button("📹 UPLOAD VIDEOS"):
+    if st.button("Upload Videos"):
         st.session_state.page = "videos"
-    if st.button("📡 START LIVE SCAN"):
+    if st.button("Start Live Detection"):
         st.session_state.page = "live"
-    if st.button("🛑 STOP ANALYSIS"):
+    if st.button("Stop Live Detection"):
         st.session_state.page = "main"
         st.rerun()
-    if st.button("❌ EXIT SYSTEM"):
+    if st.button("Exit"):
         st.stop()
 
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("---")
 
-# Execution Modules (Displayed below the menu)
+# Execution Modules
 if st.session_state.page == "images":
-    st.subheader("�️ Image Detection Mode")
-    uploaded_files = st.file_uploader("Select Images", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+    st.markdown('<div style="color:#0D47A1; font-weight:bold;">Select Images</div>', unsafe_allow_html=True)
+    uploaded_files = st.file_uploader("", type=["jpg", "jpeg", "png"], accept_multiple_files=True, label_visibility="collapsed")
     
     if uploaded_files:
         for uploaded_file in uploaded_files:
             file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
             image = cv2.imdecode(file_bytes, 1)
-            
-            with st.spinner(f"Analyzing {uploaded_file.name}..."):
-                annotated_img, alert = process_frame(image, model)
-                st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB), caption=uploaded_file.name)
-                
-                if alert:
-                    st.error(f"🚨 WILD ANIMAL ALERT in {uploaded_file.name}!")
-                    st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
+            annotated_img, alert = process_frame(image, model)
+            st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB), caption=uploaded_file.name)
+            if alert:
+                st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
 
 elif st.session_state.page == "videos":
-    st.subheader("📹 Video Detection Mode")
-    uploaded_video = st.file_uploader("Select Videos", type=["mp4", "avi", "mov"])
+    st.markdown('<div style="color:#0D47A1; font-weight:bold;">Select Videos</div>', unsafe_allow_html=True)
+    uploaded_video = st.file_uploader("", type=["mp4", "avi", "mov"], label_visibility="collapsed")
     
     if uploaded_video:
         tfile = tempfile.NamedTemporaryFile(delete=False) 
         tfile.write(uploaded_video.read())
         cap = cv2.VideoCapture(tfile.name)
         st_frame = st.empty()
-        
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret: break
             frame = cv2.resize(frame, (640, 480))
             annotated_frame, alert = process_frame(frame, model)
             st_frame.image(cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB))
-            if alert:
-                st.warning("🚨 WILD ANIMAL DETECTED!")
-        
         cap.release()
         os.remove(tfile.name)
 
 elif st.session_state.page == "live":
-    st.subheader("📺 Live Detection Mode")
-    img_file_buffer = st.camera_input("Camera Feed")
-
+    st.markdown('<div style="color:#0D47A1; font-weight:bold;">Live Detection</div>', unsafe_allow_html=True)
+    img_file_buffer = st.camera_input("")
     if img_file_buffer:
         bytes_data = img_file_buffer.getvalue()
         cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
         annotated_img, alert = process_frame(cv2_img, model)
         st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
         if alert:
-            st.error("🚨 DANGER! Wild animal detected.")
             st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
 
-st.markdown("---")
-st.caption("E:\\wild_animal_detection (Mirrored from Tkinter GUI)")
+st.markdown("<br><br>", unsafe_allow_html=True)
