@@ -15,18 +15,28 @@ ALERT_SOUND = "siren-alert-96052.mp3"
 WILD_CLASSES = ["bear", "elephant", "tiger", "lion", "leopard", "wolf", "giraffe", "zebra"]
 
 # ================= HELPER FUNCTIONS =================
-def play_siren():
-    """Bypasses buggy st.audio using HTML/Base64 directly"""
-    if os.path.exists(ALERT_SOUND):
-        with open(ALERT_SOUND, "rb") as f:
-            data = f.read()
-            b64 = base64.b64encode(data).decode()
-            md = f"""
-                <audio autoplay="true" style="display:none;">
-                <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-                </audio>
-                """
-            st.markdown(md, unsafe_allow_html=True)
+def play_siren(force=False):
+    """Bypasses buggy st.audio using HTML/Base64 directly.
+    Only allows playing once every 5 seconds unless forced."""
+    import time
+    if 'last_siren_play' not in st.session_state:
+        st.session_state.last_siren_play = 0
+    
+    curr = time.time()
+    if force or (curr - st.session_state.last_siren_play > 5.0):
+        if os.path.exists(ALERT_SOUND):
+            with open(ALERT_SOUND, "rb") as f:
+                data = f.read()
+                b64 = base64.b64encode(data).decode()
+                md = f"""
+                    <div style="display:none;">
+                    <audio autoplay="true">
+                    <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+                    </audio>
+                    </div>
+                    """
+                st.markdown(md, unsafe_allow_html=True)
+                st.session_state.last_siren_play = curr
 
 @st.cache_resource
 def load_model():
@@ -232,7 +242,7 @@ if st.session_state.page == "main":
                         "type": "Image Detection"
                     })
                     st.toast(f"🚨 Wild Animal Detected! Saved to History.")
-                    play_siren()
+                    play_siren(force=True) # Images are static, force sound play for each one
 
         if uploaded_video:
             tfile = tempfile.NamedTemporaryFile(delete=False) 
@@ -242,14 +252,10 @@ if st.session_state.page == "main":
             # Holders for Video Display
             vid_frame = st.empty()
             has_saved_video_detection = False 
-            last_siren_time = 0
             
             while cap.isOpened():
                 ret, frame = cap.read()
                 if not ret: break
-                
-                import time
-                curr_time = time.time()
                 
                 frame = cv2.resize(frame, (640, 480))
                 annotated_frame, alert = process_frame(frame, model)
@@ -259,10 +265,8 @@ if st.session_state.page == "main":
                 
                 # AUTO-SAVE FIRST DETECTION in video
                 if alert:
-                    # Siren Throttle (Only play every 3.5 seconds)
-                    if curr_time - last_siren_time > 3.5:
-                        play_siren()
-                        last_siren_time = curr_time
+                    # play_siren now throttled to 5s automatically inside the function
+                    play_siren() 
                         
                     if not has_saved_video_detection:
                         from datetime import datetime
@@ -274,7 +278,7 @@ if st.session_state.page == "main":
                         st.toast("🚨 First Video Detection Saved to History!")
                         has_saved_video_detection = True
 
-                # Small delay to keep UI responsive
+                import time
                 time.sleep(0.01)
 
             cap.release()
