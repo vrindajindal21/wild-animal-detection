@@ -224,15 +224,16 @@ if st.session_state.page == "main":
                 # Show Result
                 st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
                 
-                # AUTO-SAVE ALL ALERTED IMAGES
+                # SAVE EVERYTHING to history for images
+                from datetime import datetime
+                st.session_state.history.append({
+                    "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB).copy(), 
+                    "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "type": "Image Scan"
+                })
+                
                 if alert:
-                    from datetime import datetime
-                    st.session_state.history.append({
-                        "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB).copy(), 
-                        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "type": "Image Detection"
-                    })
-                    st.toast(f"🚨 Wild Animal Detected! Saved to History.")
+                    st.toast(f"🚨 Wild Animal Detected!")
                     play_siren()
 
         if uploaded_video:
@@ -260,15 +261,15 @@ if st.session_state.page == "main":
                         with siren_holder: play_siren()
                         last_siren_time = curr_time
                     
-                    # Auto-Save every 5s if animal is present (To capture ALL events, not just 1st)
+                    # Auto-Save every 5s during video detection
                     if curr_time - last_save_time > 5.0:
                         from datetime import datetime
                         st.session_state.history.append({
                             "image": cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB).copy(),
                             "time": datetime.now().strftime("%H:%M:%S"),
-                            "type": "Video Detection"
+                            "type": "Video Alert"
                         })
-                        st.toast("🚨 Detected and Saved to History!")
+                        st.toast("🚨 Video detection-log saved!")
                         last_save_time = curr_time
 
                 time.sleep(0.01)
@@ -296,13 +297,12 @@ elif st.session_state.page == "history":
         st.rerun()
 
     if not st.session_state.history:
-        st.info("No saved results yet. Start scanning to save your alerts!")
+        st.info("No saved results yet. Start scanning to see your history!")
     else:
-        tab1, tab2 = st.tabs(["📸 Detections", "⚙️ Manage"])
+        tab1, tab2 = st.tabs(["📸 All Activity", "⚙️ Manage"])
         with tab1:
-            # Show all detections
             for item in reversed(st.session_state.history):
-                with st.expander(f"🕒 {item.get('time', '')} - {item.get('type', 'Detection')}"):
+                with st.expander(f"🕒 {item.get('time', '')} - {item.get('type', 'Scan')}"):
                     st.image(item['image'], use_container_width=True)
         with tab2:
             if st.button("🗑️ Clear All History"):
@@ -323,14 +323,15 @@ elif st.session_state.page == "live":
         annotated_img, alert = process_frame(cv2_img, model)
         st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
         
+        # Save EVERY live capture
+        from datetime import datetime
+        st.session_state.history.append({
+            "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB).copy(),
+            "time": datetime.now().strftime("%H:%M:%S"),
+            "type": "Live Capture"
+        })
         if alert:
-            from datetime import datetime
-            st.session_state.history.append({
-                "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB).copy(),
-                "time": datetime.now().strftime("%H:%M:%S"),
-                "type": "Live Detection"
-            })
-            st.toast("🚨 Detected! Saved to History.")
+            st.toast("🚨 Wild Animal Detected!")
             play_siren()
 
 st.markdown("<br><br>", unsafe_allow_html=True)
