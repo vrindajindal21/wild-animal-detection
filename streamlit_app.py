@@ -96,16 +96,12 @@ st.markdown("""
     }
 
     /* Specific Hex Colors from original GUI */
-    /* 1. Upload Images - Blue */
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) button { background-color: #1976D2 !important; }
-    /* 2. Upload Videos - Green */
-    div[data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: #4CAF50 !important; }
-    /* 3. Live Detection - Orange */
-    div[data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: #FF9800 !important; }
-    /* 4. Stop - Red */
-    div[data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: #F44336 !important; }
-    /* 5. Exit - Purple */
-    div[data-testid="stVerticalBlock"] > div:nth-child(6) button { background-color: #8E24AA !important; }
+    /* Targetting by sequence in the main block */
+    [data-testid="stVerticalBlock"] > div:nth-child(2) button { background-color: #1976D2 !important; } /* Upload Images */
+    [data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: #4CAF50 !important; } /* Upload Videos */
+    [data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: #FF9800 !important; } /* Start Live */
+    [data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: #F44336 !important; } /* Stop Live */
+    [data-testid="stVerticalBlock"] > div:nth-child(6) button { background-color: #8E24AA !important; } /* Exit */
 
     /* Hide Streamlit components */
     header, footer, #MainMenu { visibility: hidden !important; }
