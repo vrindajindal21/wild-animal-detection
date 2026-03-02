@@ -219,7 +219,8 @@ if st.session_state.page == "main":
                             "type": "Image Scan"
                         })
                         st.toast("✅ Saved to History!")
-                if alert: st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
+                if alert: 
+                    st.empty().audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
 
         if uploaded_video:
             # Generate a temporary file path that OpenCV can read
@@ -245,8 +246,9 @@ if st.session_state.page == "main":
                 # Update visual
                 st_frame.image(cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB))
                 
-                # Sound alert for video too
-                if alert: st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
+                # Sound alert for video too - use a fixed key to avoid duplicates in the loop
+                if alert: 
+                    st.empty().audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
                 
             cap.release()
             try:
