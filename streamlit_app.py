@@ -6,6 +6,7 @@ from ultralytics import YOLO
 from PIL import Image
 import os
 import tempfile
+from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, RTCConfiguration
 
 # ================= CONFIG =================
 MODEL_PATH = "yolov8n.pt"
@@ -37,6 +38,18 @@ def process_frame(frame, model):
             break
     
     return annotated_frame, alert_triggered
+
+class VideoTransformer(VideoTransformerBase):
+    def __init__(self):
+        self.model = load_model()
+
+    def transform(self, frame):
+        img = frame.to_ndarray(format="bgr24")
+        annotated_img, alert = process_frame(img, self.model)
+        
+        # If alert is triggered, sound logic is handled separately in Streamlit apps 
+        # as the transform runs in a separate thread. For now, we show the visual alert.
+        return annotated_img
 
 # ================= MAIN APP =================
 st.set_page_config(
@@ -186,12 +199,14 @@ elif st.session_state.page == "live":
         st.session_state.page = "main"
         st.rerun()
 
-    img_file_buffer = st.camera_input("Scanner Active")
-    if img_file_buffer:
-        bytes_data = img_file_buffer.getvalue()
-        cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
-        annotated_img, alert = process_frame(cv2_img, model)
-        st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
-        if alert: st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
+    webrtc_streamer(
+        key="live-detection",
+        video_transformer_factory=VideoTransformer,
+        rtc_configuration=RTCConfiguration(
+            {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+        ),
+        media_stream_constraints={"video": True, "audio": False},
+    )
+    st.info("The live stream will process every frame using AI. If a wild animal is detected, a red alert will appear on the video.")
 
 st.markdown("<br><br>", unsafe_allow_html=True)
