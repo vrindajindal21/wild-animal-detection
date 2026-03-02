@@ -229,10 +229,14 @@ if st.session_state.page == "main":
             vid_frame = st.empty()
             audio_placeholder = st.empty()
             has_saved_video_detection = False 
+            last_siren_time = 0
             
             while cap.isOpened():
                 ret, frame = cap.read()
                 if not ret: break
+                
+                import time
+                curr_time = time.time()
                 
                 frame = cv2.resize(frame, (640, 480))
                 annotated_frame, alert = process_frame(frame, model)
@@ -242,10 +246,15 @@ if st.session_state.page == "main":
                 
                 # AUTO-SAVE FIRST DETECTION in video
                 if alert:
-                    from datetime import datetime
-                    now_str = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-                    audio_placeholder.audio(ALERT_SOUND, format="audio/mp3", autoplay=True, key=f"audio_vid_{now_str}")
+                    # Siren Throttle (Only play every 3.5 seconds)
+                    if curr_time - last_siren_time > 3.5:
+                        from datetime import datetime
+                        now_str = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+                        audio_placeholder.audio(ALERT_SOUND, format="audio/mp3", autoplay=True, key=f"audio_vid_{now_str}")
+                        last_siren_time = curr_time
+                        
                     if not has_saved_video_detection:
+                        from datetime import datetime
                         st.session_state.history.append({
                             "image": cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB),
                             "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -255,7 +264,6 @@ if st.session_state.page == "main":
                         has_saved_video_detection = True
 
                 # Small delay to keep UI responsive
-                import time
                 time.sleep(0.01)
 
             cap.release()
@@ -311,19 +319,18 @@ elif st.session_state.page == "live":
         cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
         annotated_img, alert = process_frame(cv2_img, model)
         
-        res_col1, res_col2 = st.columns([0.8, 0.2])
-        with res_col1:
-            st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
-        with res_col2:
-            if st.button("💾 Save Scan"):
-                from datetime import datetime
-                st.session_state.history.append({
-                    "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB),
-                    "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "type": "Live Scan"
-                })
-                st.toast("✅ Saved to History!")
+        st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
         
-        if alert: st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
+        # AUTO-SAVE LIVE DETECTION
+        if alert:
+            from datetime import datetime
+            now_str = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+            st.session_state.history.append({
+                "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB),
+                "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "type": "Auto-Saved Live Detection"
+            })
+            st.toast("🚨 Live Wild Animal Detected! Saved to History.")
+            st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True, key=f"live_{now_str}")
 
 st.markdown("<br><br>", unsafe_allow_html=True)
