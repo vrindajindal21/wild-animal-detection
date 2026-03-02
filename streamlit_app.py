@@ -224,15 +224,43 @@ if st.session_state.page == "main":
             tfile = tempfile.NamedTemporaryFile(delete=False) 
             tfile.write(uploaded_video.read())
             cap = cv2.VideoCapture(tfile.name)
-            st_frame = st.empty()
+            
+            # Holders for Video Display
+            vid_frame = st.empty()
+            btn_col1, btn_col2 = st.columns([0.7, 0.3])
+            
             while cap.isOpened():
                 ret, frame = cap.read()
                 if not ret: break
+                
                 frame = cv2.resize(frame, (640, 480))
                 annotated_frame, alert = process_frame(frame, model)
-                st_frame.image(cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB))
+                
+                # Update Video Frame
+                vid_frame.image(cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB))
+                
+                # Alert and Sound for Video
+                if alert:
+                    st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
+                
+                # Snapshot Button (Updates dynamically)
+                with btn_col2:
+                    if st.button("📸 Save Snapshot", key=f"snap_{v}"):
+                        from datetime import datetime
+                        st.session_state.history.append({
+                            "image": cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB),
+                            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            "type": "Video Snapshot"
+                        })
+                        st.toast("✅ Snapshot Saved!")
+
+                # Small delay to keep UI responsive
+                import time
+                time.sleep(0.01)
+
             cap.release()
             os.remove(tfile.name)
+            st.success("✅ Video Processing Complete!")
             
     else:
         # Show standard control buttons only when nothing is open
