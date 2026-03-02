@@ -127,14 +127,30 @@ st.markdown("""
         transition: transform 0.1s !important;
     }
     
-    /* 1. Upload Images - Blue */
-    [data-testid="stVerticalBlock"] > div:nth-child(3) div[data-testid="stFileUploader"] button {
-        background-color: #1976D2 !important;
+    /* Hide the default 'Browse files' text and replace it */
+    div[data-testid="stFileUploader"] button {
+        font-size: 0 !important; /* Hide original text */
     }
-    /* 2. Upload Videos - Green */
-    [data-testid="stVerticalBlock"] > div:nth-child(4) div[data-testid="stFileUploader"] button {
-        background-color: #4CAF50 !important;
+    
+    /* Force 'Upload Images' text */
+    [data-testid="stVerticalBlock"] > div:nth-child(3) div[data-testid="stFileUploader"] button::after {
+        content: "Upload Images" !important;
+        font-size: 16px !important;
+        color: white !important;
+        font-weight: bold !important;
     }
+    
+    /* Force 'Upload Videos' text */
+    [data-testid="stVerticalBlock"] > div:nth-child(4) div[data-testid="stFileUploader"] button::after {
+        content: "Upload Videos" !important;
+        font-size: 16px !important;
+        color: white !important;
+        font-weight: bold !important;
+    }
+
+    /* Assign Colors */
+    [data-testid="stVerticalBlock"] > div:nth-child(3) div[data-testid="stFileUploader"] button { background-color: #1976D2 !important; }
+    [data-testid="stVerticalBlock"] > div:nth-child(4) div[data-testid="stFileUploader"] button { background-color: #4CAF50 !important; }
     /* 3. Live Detection - Orange */
     [data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: #FF9800 !important; }
     /* 4. Stop - Red */
