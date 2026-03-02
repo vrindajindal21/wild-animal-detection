@@ -171,28 +171,27 @@ st.markdown('<div class="original-title">🐾 Wild Animal Detection System</div>
 
 if 'page' not in st.session_state:
     st.session_state.page = "main"
+if 'uploader_version' not in st.session_state:
+    st.session_state.uploader_version = 0
 
 # ================= NAVIGATION LOGIC =================
-# If files are uploaded, we stay in "main" but logic will handle the "Open" state
-# ================= MAIN MENU =================
 if st.session_state.page == "main":
+    v = st.session_state.uploader_version
     # Holders for uploads
     img_holder = st.empty()
     vid_holder = st.empty()
     
-    # 1/2. Styled File Uploaders
-    uploaded_images = img_holder.file_uploader("Upload Images", type=["jpg", "jpeg", "png"], accept_multiple_files=True, key="img_up")
-    uploaded_video = vid_holder.file_uploader("Upload Videos", type=["mp4", "avi", "mov"], key="vid_up")
+    # 1/2. Styled File Uploaders with dynamic keys for clearing
+    uploaded_images = img_holder.file_uploader("Upload Images", type=["jpg", "jpeg", "png"], accept_multiple_files=True, key=f"img_up_{v}")
+    uploaded_video = vid_holder.file_uploader("Upload Videos", type=["mp4", "avi", "mov"], key=f"vid_up_{v}")
     
-    # --- IF IMAGES/VIDEO UPLOADED: SKIP REST OF MENU AND SHOW RESULTS ---
     if uploaded_images or uploaded_video:
-        # Hide the uploaders to focus on result
         img_holder.empty()
         vid_holder.empty()
         
-        # Back Button at Top
         if st.button("⬅️ Close & Back to Menu", key="back_btn"):
-            st.rerun() # This will clear the session-based file uploader
+            st.session_state.uploader_version += 1
+            st.rerun()
             
         st.markdown("---")
         
