@@ -206,19 +206,18 @@ if st.session_state.page == "main":
                 annotated_img, alert = process_frame(image, model)
                 
                 # Show Result
-                res_col1, res_col2 = st.columns([0.7, 0.3])
-                with res_col1:
-                    st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
-                with res_col2:
-                    if st.button(f"💾 Save Result {i+1}", key=f"save_{i}"):
-                        from datetime import datetime
-                        st.session_state.history.append({
-                            "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB),
-                            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            "type": "Image Scan"
-                        })
-                        st.toast("✅ Saved to History!")
-                if alert: st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
+                st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
+                
+                # AUTO-SAVE TO HISTORY if animal detected
+                if alert:
+                    from datetime import datetime
+                    st.session_state.history.append({
+                        "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB),
+                        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "type": "Auto-Saved Image Detection"
+                    })
+                    st.toast(f"🚨 Wild Animal Detected! Saved to History.")
+                    st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
 
         if uploaded_video:
             tfile = tempfile.NamedTemporaryFile(delete=False) 
@@ -227,7 +226,7 @@ if st.session_state.page == "main":
             
             # Holders for Video Display
             vid_frame = st.empty()
-            btn_col1, btn_col2 = st.columns([0.7, 0.3])
+            has_saved_video_detection = False # Flag to avoid saving thousands of frames
             
             while cap.isOpened():
                 ret, frame = cap.read()
@@ -239,20 +238,18 @@ if st.session_state.page == "main":
                 # Update Video Frame
                 vid_frame.image(cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB))
                 
-                # Alert and Sound for Video
+                # AUTO-SAVE FIRST DETECTION in video
                 if alert:
                     st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
-                
-                # Snapshot Button (Updates dynamically)
-                with btn_col2:
-                    if st.button("📸 Save Snapshot", key=f"snap_{v}"):
+                    if not has_saved_video_detection:
                         from datetime import datetime
                         st.session_state.history.append({
                             "image": cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB),
                             "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            "type": "Video Snapshot"
+                            "type": "Auto-Saved Video Detection"
                         })
-                        st.toast("✅ Snapshot Saved!")
+                        st.toast("🚨 First Video Detection Saved to History!")
+                        has_saved_video_detection = True
 
                 # Small delay to keep UI responsive
                 import time
