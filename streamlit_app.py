@@ -132,39 +132,29 @@ st.markdown("""
         font-size: 0 !important; /* Hide original text */
     }
     
-    /* Force 'Upload Images' text */
-    [data-testid="stVerticalBlock"] > div:nth-child(3) div[data-testid="stFileUploader"] button::after {
-        content: "Upload Images" !important;
-        font-size: 16px !important;
-        color: white !important;
-        font-weight: bold !important;
-    }
-    
-    /* Force 'Upload Videos' text */
-    [data-testid="stVerticalBlock"] > div:nth-child(4) div[data-testid="stFileUploader"] button::after {
-        content: "Upload Videos" !important;
-        font-size: 16px !important;
-        color: white !important;
-        font-weight: bold !important;
-    }
-
-    /* Assign Colors */
+    /* Button Color Identities - Restored and Fixed */
+    /* 1. Upload Images - Blue */
     [data-testid="stVerticalBlock"] > div:nth-child(3) div[data-testid="stFileUploader"] button { background-color: #1976D2 !important; }
+    [data-testid="stVerticalBlock"] > div:nth-child(3) div[data-testid="stFileUploader"] button::after { content: "Upload Images" !important; font-size: 16px !important; color: white !important; font-weight: bold !important; }
+
+    /* 2. Upload Videos - Green */
     [data-testid="stVerticalBlock"] > div:nth-child(4) div[data-testid="stFileUploader"] button { background-color: #4CAF50 !important; }
-    /* 3. Live Detection - Orange */
+    [data-testid="stVerticalBlock"] > div:nth-child(4) div[data-testid="stFileUploader"] button::after { content: "Upload Videos" !important; font-size: 16px !important; color: white !important; font-weight: bold !important; }
+
+    /* 3. Start Live - Orange */
     [data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: #FF9800 !important; }
-    /* 4. Stop - Red */
+    
+    /* 4. Stop Live - Red */
     [data-testid="stVerticalBlock"] > div:nth-child(6) button { background-color: #F44336 !important; }
-    /* 5. History - Yellow */
+    
+    /* 5. View History - Yellow */
     [data-testid="stVerticalBlock"] > div:nth-child(7) button { background-color: #FBC02D !important; }
+    
     /* 6. Exit - Purple */
     [data-testid="stVerticalBlock"] > div:nth-child(8) button { background-color: #8E24AA !important; }
 
-    /* Hide the Uploaded File List (The redundant blue bars) */
-    [data-testid="stFileUploaderUploadedFileList"] {
-        display: none !important;
-    }
-
+    /* Hide redundant Uploaded file labels */
+    [data-testid="stFileUploaderUploadedFileList"] { display: none !important; }
     header, footer, #MainMenu { visibility: hidden !important; }
 </style>
 """, unsafe_allow_html=True)
@@ -182,18 +172,13 @@ if 'history' not in st.session_state:
 # ================= NAVIGATION LOGIC =================
 if st.session_state.page == "main":
     v = st.session_state.uploader_version
-    # Holders for uploads
-    img_holder = st.empty()
-    vid_holder = st.empty()
     
-    # 1/2. Styled File Uploaders with dynamic keys for clearing
-    uploaded_images = img_holder.file_uploader("Upload Images", type=["jpg", "jpeg", "png"], accept_multiple_files=True, key=f"img_up_{v}")
-    uploaded_video = vid_holder.file_uploader("Upload Videos", type=["mp4", "avi", "mov"], key=f"vid_up_{v}")
+    # 1. Images
+    uploaded_images = st.file_uploader("Upload Images", type=["jpg", "jpeg", "png"], accept_multiple_files=True, key=f"img_up_{v}")
+    # 2. Videos
+    uploaded_video = st.file_uploader("Upload Videos", type=["mp4", "avi", "mov"], key=f"vid_up_{v}")
     
     if uploaded_images or uploaded_video:
-        img_holder.empty()
-        vid_holder.empty()
-        
         if st.button("⬅️ Close & Back to Menu", key="back_btn"):
             st.session_state.uploader_version += 1
             st.rerun()
@@ -205,8 +190,6 @@ if st.session_state.page == "main":
                 file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
                 image = cv2.imdecode(file_bytes, 1)
                 annotated_img, alert = process_frame(image, model)
-                
-                # Show Result
                 res_col1, res_col2 = st.columns([0.7, 0.3])
                 with res_col1:
                     st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
@@ -218,43 +201,27 @@ if st.session_state.page == "main":
                             "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                             "type": "Image Scan"
                         })
-                        st.toast("✅ Saved to History!")
-                if alert: 
-                    st.empty().audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
+                        st.toast("✅ Saved!")
+                if alert: st.empty().audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
 
         if uploaded_video:
-            # Generate a temporary file path that OpenCV can read
             suffix = "." + uploaded_video.name.split(".")[-1]
             with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tfile:
                 tfile.write(uploaded_video.read())
                 temp_filename = tfile.name
-                
             cap = cv2.VideoCapture(temp_filename)
             st_frame = st.empty()
-            
-            # Simple stop control
             stop_video = st.button("🛑 Stop Video Playback")
-            
             while cap.isOpened() and not stop_video:
                 ret, frame = cap.read()
                 if not ret: break
-                
-                # Resize for smoother processing
                 frame = cv2.resize(frame, (640, 480))
                 annotated_frame, alert = process_frame(frame, model)
-                
-                # Update visual
                 st_frame.image(cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB))
-                
-                # Sound alert for video too - use a fixed key to avoid duplicates in the loop
-                if alert: 
-                    st.empty().audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
-                
+                if alert: st.empty().audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
             cap.release()
-            try:
-                os.remove(temp_filename)
-            except:
-                pass
+            try: os.remove(temp_filename)
+            except: pass
             
     else:
         # Show standard control buttons only when nothing is open
