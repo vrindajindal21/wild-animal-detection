@@ -195,6 +195,8 @@ if 'uploader_version' not in st.session_state:
     st.session_state.uploader_version = 0
 if 'history' not in st.session_state:
     st.session_state.history = []
+if 'processed_files' not in st.session_state:
+    st.session_state.processed_files = set()
 
 # ================= NAVIGATION LOGIC =================
 if st.session_state.page == "main":
@@ -213,12 +215,16 @@ if st.session_state.page == "main":
         
         if st.button("⬅️ Close & Back to Menu", key="back_btn"):
             st.session_state.uploader_version += 1
+            st.session_state.processed_files = set() # Clear tracking
             st.rerun()
             
         st.markdown("---")
         
         if uploaded_images:
             for i, uploaded_file in enumerate(uploaded_images):
+                # Use filename + size as a unique ID to avoid duplicate saves on rerun
+                file_id = f"{uploaded_file.name}_{uploaded_file.size}"
+                
                 file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
                 image = cv2.imdecode(file_bytes, 1)
                 annotated_img, alert = process_frame(image, model)
@@ -226,14 +232,15 @@ if st.session_state.page == "main":
                 # Show Result
                 st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
                 
-                # AUTO-SAVE TO HISTORY if animal detected
-                if alert:
+                # AUTO-SAVE TO HISTORY tracking unique files
+                if alert and file_id not in st.session_state.processed_files:
                     from datetime import datetime
                     st.session_state.history.append({
                         "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB),
                         "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "type": "Image Detection"
                     })
+                    st.session_state.processed_files.add(file_id)
                     st.toast(f"🚨 Wild Animal Detected! Saved to History.")
                     play_siren()
 
@@ -263,21 +270,23 @@ if st.session_state.page == "main":
                 
                 # AUTO-SAVE TO HISTORY if animal detected
                 if alert:
-                    # Siren Cooldown: 10 seconds
+                    # Siren Cooldown: 10 seconds (avoids infinite/annoying overlap)
                     if curr_time - last_siren_time > 10.0:
                         with siren_holder:
                             play_siren()
                         last_siren_time = curr_time
                     
-                    # History Save Cooldown: 5 seconds (Allows 'Saving All' major detections)
-                    if curr_time - last_save_time > 5.0:
+                    # History Save Cooldown: 2 seconds (Ensures 'Save All' major events)
+                    if curr_time - last_save_time > 2.0:
                         from datetime import datetime
                         st.session_state.history.append({
                             "image": cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB),
                             "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                             "type": "Video Detection"
                         })
-                        st.toast("🚨 Detected Animal Saved to History!")
+                        # Memory Cap
+                        if len(st.session_state.history) > 100: st.session_state.history.pop(0)
+                        st.toast("🚨 Animal Saved to History!")
                         last_save_time = curr_time
 
                 # Small delay to keep UI responsive
@@ -338,7 +347,7 @@ elif st.session_state.page == "live":
         
         st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
         
-        # AUTO-SAVE LIVE DETECTION
+        # AUTO-SAVE LIVE DETECTION (Happens every time picture is snapped)
         if alert:
             from datetime import datetime
             st.session_state.history.append({
@@ -346,7 +355,8 @@ elif st.session_state.page == "live":
                 "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "type": "Live Detection"
             })
-            st.toast("🚨 Live Wild Animal Detected! Saved to History.")
+            if len(st.session_state.history) > 100: st.session_state.history.pop(0)
+            st.toast("🚨 Detected Animal Saved to History!")
             play_siren()
 
 st.markdown("<br><br>", unsafe_allow_html=True)
