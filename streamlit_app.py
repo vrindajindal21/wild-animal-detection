@@ -31,6 +31,9 @@ def process_frame(frame, model):
         label = safe_label(model, cls_id)
         if label in WILD_CLASSES:
             alert_triggered = True
+            # Add red alert text exactly like the original GUI code
+            cv2.putText(annotated_frame, "WILD ANIMAL ALERT!", (10, 50),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
             break
     
     return annotated_frame, alert_triggered
