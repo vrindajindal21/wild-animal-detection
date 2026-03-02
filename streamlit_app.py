@@ -54,87 +54,112 @@ st.set_page_config(
 # Load AI Model
 model = load_model()
 
-# ================= CSS: STABLE TKINTER MIRROR =================
+# ================= CSS: PROFESSIONAL WILDLIFE DASHBOARD =================
 st.markdown("""
 <style>
-    /* Force main background */
+    /* Professional Nature Palette */
+    :root {
+        --primary: #1e3d2f;    /* Dark Forest Green */
+        --secondary: #2e7d32;  /* Leaf Green */
+        --accent: #ff9800;     /* Warning Orange */
+        --danger: #d32f2f;     /* Alert Red */
+        --bg: #f5f7f8;         /* Soft Gray Background */
+        --text: #1a1a1a;
+    }
+
     .stApp {
-        background-color: #E3F2FD !important;
+        background: radial-gradient(circle at top right, #e8f5e9, #f5f7f8);
+        color: var(--text);
     }
 
-    /* Target all buttons directly to ensure they are not white */
-    .stButton > button {
-        width: 100% !important;
-        color: white !important;
-        font-weight: bold !important;
-        border-radius: 4px !important;
-        border: 1px solid rgba(0,0,0,0.2) !important;
-        padding: 0.5rem 1rem !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
+    /* Modern Card-Style Menu Container */
+    [data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] {
+        background: white;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.05);
     }
-    
-    /* Ensure text inside button is white */
-    .stButton > button p {
-        color: white !important;
-        margin: 0 !important;
-        font-size: 16px !important;
-    }
-
-    /* Assign Colors using a more reliable index-based approach */
-    /* We target the buttons by their order in the centered column */
-    
-    /* 1. Upload Images - Blue */
-    [data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(1) button { background-color: #1565C0 !important; }
-    /* 2. Upload Videos - Green */
-    [data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(2) button { background-color: #43A047 !important; }
-    /* 3. Live Detection - Orange */
-    [data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: #FF9800 !important; }
-    /* 4. Stop - Red */
-    [data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: #D32F2F !important; }
-    /* 5. Exit - Purple */
-    [data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: #7B1FA2 !important; }
 
     /* Title Styling */
-    .tk-label {
-        color: #0D47A1;
-        font-weight: bold;
-        font-size: 28px;
+    .dashboard-title {
+        color: var(--primary);
+        font-weight: 800;
+        font-size: 34px;
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 8px;
+        letter-spacing: -0.5px;
+    }
+    .dashboard-subtitle {
+        color: #666;
+        text-align: center;
+        font-size: 16px;
+        margin-bottom: 40px;
     }
 
-    /* Hide default streamlit clutter */
+    /* Premium Button Design */
+    div.stButton > button {
+        width: 100% !important;
+        background-color: white !important;
+        color: var(--primary) !important;
+        border: 1.5px solid #eee !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
+        font-weight: 600 !important;
+        font-size: 17px !important;
+        text-align: left !important;
+        display: flex !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+    }
+
+    div.stButton > button:hover {
+        border-color: var(--secondary) !important;
+        background-color: #f1f8f1 !important;
+        transform: translateX(5px) !important;
+        box-shadow: 4px 4px 15px rgba(46, 125, 50, 0.1) !important;
+    }
+
+    /* Logic to show color intent on left border */
+    div[data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(1) button { border-left: 6px solid #1E88E5 !important; }
+    div[data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(2) button { border-left: 6px solid #43A047 !important; }
+    div[data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(3) button { border-left: 6px solid #FB8C00 !important; }
+    div[data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(4) button { border-left: 6px solid #E53935 !important; }
+    div[data-testid="column"]:nth-of-type(2) [data-testid="stVerticalBlock"] > div:nth-child(5) button { border-left: 6px solid #8E24AA !important; }
+
+    /* Clean Up Streamlit Defaults */
     header, footer { visibility: hidden !important; }
+    #MainMenu { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
-# Centered Title (Tkinter Label)
-st.markdown('<div class="tk-label">🐾 Wild Animal Detection System</div>', unsafe_allow_html=True)
+# Main Dashboard Frame
+st.markdown('<div class="dashboard-title">🐯 Wildlife Safety Hub</div>', unsafe_allow_html=True)
+st.markdown('<div class="dashboard-subtitle">Active Surveillance & Detection System</div>', unsafe_allow_html=True)
 
 # Session State for navigation
 if 'page' not in st.session_state:
     st.session_state.page = "main"
 
-# Menu Section (Centered via columns to limit width like Tkinter's width=25)
-mc1, menu_col, mc3 = st.columns([1, 1.2, 1])
+# Dashboard Menu Section
+c1, menu_col, c3 = st.columns([0.1, 0.8, 0.1])
 
 with menu_col:
-    # We use st.button but the CSS above will force the colors
-    if st.button("Upload Images"):
+    if st.button("📸  Analyze Images"):
         st.session_state.page = "images"
-    if st.button("Upload Videos"):
+    if st.button("🎥  Scan Videos"):
         st.session_state.page = "videos"
-    if st.button("Start Live Detection"):
+    if st.button("📡  Live Surveillance"):
         st.session_state.page = "live"
-    if st.button("Stop Live Detection"):
+    if st.button("🛑  Deactivate System"):
         st.session_state.page = "main"
         st.rerun()
-    if st.button("Exit"):
+    if st.button("🚪  Exit Application"):
         st.stop()
 
-st.markdown("---")
+st.markdown("<br>", unsafe_allow_html=True)
 
 # Execution Modules
 if st.session_state.page == "images":
