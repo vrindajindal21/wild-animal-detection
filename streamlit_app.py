@@ -211,13 +211,14 @@ if st.session_state.page == "main":
                 # AUTO-SAVE TO HISTORY if animal detected
                 if alert:
                     from datetime import datetime
+                    now_str = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
                     st.session_state.history.append({
                         "image": cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB),
                         "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "type": "Auto-Saved Image Detection"
                     })
                     st.toast(f"🚨 Wild Animal Detected! Saved to History.")
-                    st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
+                    st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True, key=f"audio_img_{now_str}_{i}")
 
         if uploaded_video:
             tfile = tempfile.NamedTemporaryFile(delete=False) 
@@ -226,7 +227,8 @@ if st.session_state.page == "main":
             
             # Holders for Video Display
             vid_frame = st.empty()
-            has_saved_video_detection = False # Flag to avoid saving thousands of frames
+            audio_placeholder = st.empty()
+            has_saved_video_detection = False 
             
             while cap.isOpened():
                 ret, frame = cap.read()
@@ -240,9 +242,10 @@ if st.session_state.page == "main":
                 
                 # AUTO-SAVE FIRST DETECTION in video
                 if alert:
-                    st.audio(ALERT_SOUND, format="audio/mp3", autoplay=True)
+                    from datetime import datetime
+                    now_str = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+                    audio_placeholder.audio(ALERT_SOUND, format="audio/mp3", autoplay=True, key=f"audio_vid_{now_str}")
                     if not has_saved_video_detection:
-                        from datetime import datetime
                         st.session_state.history.append({
                             "image": cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB),
                             "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
