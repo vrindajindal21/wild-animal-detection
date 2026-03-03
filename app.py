@@ -8,7 +8,7 @@ import threading
 from PIL import Image, ImageTk
 
 # ================= CONFIG =================
-SCRIPT_DIR = r"C:/Users/hp/Downloads"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(SCRIPT_DIR, "yolov8n.pt")
 ALERT_SOUND = os.path.join(SCRIPT_DIR, "siren-alert-96052.mp3")
 WILD_CLASSES = ["bear", "elephant", "tiger", "lion", "leopard", "wolf", "giraffe", "zebra"]

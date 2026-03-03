@@ -151,34 +151,46 @@ st.markdown("""
     }
     
     /* Force 'Upload Images' text */
-    [data-testid="stVerticalBlock"] > div:nth-child(3) div[data-testid="stFileUploader"] button::after {
+    [data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stFileUploader"] button::after {
         content: "Upload Images" !important;
         font-size: 16px !important;
         color: white !important;
         font-weight: bold !important;
     }
-    
-    /* Force 'Upload Videos' text */
-    [data-testid="stVerticalBlock"] > div:nth-child(4) div[data-testid="stFileUploader"] button::after {
+    [data-testid="stVerticalBlock"] > div:nth-child(2) [data-testid="stFileUploader"] button::after {
         content: "Upload Videos" !important;
         font-size: 16px !important;
         color: white !important;
         font-weight: bold !important;
     }
 
-    /* Assign Colors */
-    [data-testid="stVerticalBlock"] > div:nth-child(3) div[data-testid="stFileUploader"] button { background-color: #1976D2 !important; }
-    [data-testid="stVerticalBlock"] > div:nth-child(4) div[data-testid="stFileUploader"] button { background-color: #4CAF50 !important; }
-    /* 3. Live Detection - Orange */
-    [data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: #FF9800 !important; }
-    /* 4. Stop - Red */
-    [data-testid="stVerticalBlock"] > div:nth-child(6) button { background-color: #F44336 !important; }
-    /* 5. History - Yellow */
-    [data-testid="stVerticalBlock"] > div:nth-child(7) button { background-color: #FBC02D !important; }
-    /* 6. Exit - Purple */
-    [data-testid="stVerticalBlock"] > div:nth-child(8) button { background-color: #8E24AA !important; }
+    /* Assign Colors using highly specific paths */
+    /* Images - Blue */
+    [data-testid="stVerticalBlock"] > div:nth-child(1) [data-testid="stFileUploader"] button { background-color: #1976D2 !important; }
+    /* Videos - Green */
+    [data-testid="stVerticalBlock"] > div:nth-child(2) [data-testid="stFileUploader"] button { background-color: #4CAF50 !important; }
+    /* Start - Orange */
+    [data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: #FF9800 !important; }
+    /* Stop - Red */
+    [data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: #F44336 !important; }
+    /* History - Yellow */
+    [data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: #FBC02D !important; }
+    /* Exit - Purple */
+    [data-testid="stVerticalBlock"] > div:nth-child(6) button { background-color: #8E24AA !important; }
 
-    /* Hide the Uploaded File List (The redundant blue bars) */
+    /* Results Header Styling */
+    .results-banner {
+        background: #0D47A1;
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        margin: 20px 0;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    /* Hide the Uploaded File List */
     [data-testid="stFileUploaderUploadedFileList"] {
         display: none !important;
     }
@@ -201,23 +213,37 @@ if 'processed_files' not in st.session_state:
 # ================= NAVIGATION LOGIC =================
 if st.session_state.page == "main":
     v = st.session_state.uploader_version
-    # Holders for uploads
-    img_holder = st.empty()
-    vid_holder = st.empty()
     
-    # 1/2. Styled File Uploaders with dynamic keys for clearing
-    uploaded_images = img_holder.file_uploader("Upload Images", type=["jpg", "jpeg", "png"], accept_multiple_files=True, key=f"img_up_{v}")
-    uploaded_video = vid_holder.file_uploader("Upload Videos", type=["mp4", "avi", "mov"], key=f"vid_up_{v}")
+    # We use a container to ensure indices match for CSS nth-child styling
+    with st.container():
+        uploaded_images = st.file_uploader("Upload Images", type=["jpg", "jpeg", "png"], accept_multiple_files=True, key=f"img_up_{v}")
+        uploaded_video = st.file_uploader("Upload Videos", type=["mp4", "avi", "mov"], key=f"vid_up_{v}")
+        
+        # Only show Main Menu buttons if NO files are currently being processed
+        if not (uploaded_images or uploaded_video):
+            # 1. Start Clicked
+            if st.button("Start Live Detection"):
+                st.session_state.page = "live"
+                st.rerun()
+            # 2. Stop Clicked
+            if st.button("Stop Live Detection"):
+                st.rerun()
+            # 3. View History Clicked
+            if st.button("View Saved History"):
+                st.session_state.page = "history"
+                st.rerun()
+            # 4. Exit Clicked
+            if st.button("Exit"):
+                st.stop()
+        else:
+            # If files ARE uploaded, show the "Back" button at the top of results
+            if st.button("⬅️ Finish & Return to Main Menu", key="back_btn"):
+                st.session_state.uploader_version += 1
+                st.session_state.processed_files = set() 
+                st.rerun()
     
     if uploaded_images or uploaded_video:
-        img_holder.empty()
-        vid_holder.empty()
-        
-        if st.button("⬅️ Close & Back to Menu", key="back_btn"):
-            st.session_state.uploader_version += 1
-            st.session_state.processed_files = set() # Clear tracking
-            st.rerun()
-            
+        st.markdown('<div class="results-banner">🔍 SCANNING ACTIVE... SEE RESULTS BELOW</div>', unsafe_allow_html=True)
         st.markdown("---")
         
         if uploaded_images:
@@ -229,8 +255,13 @@ if st.session_state.page == "main":
                 image = cv2.imdecode(file_bytes, 1)
                 annotated_img, alert = process_frame(image, model)
                 
-                # Show Result
-                st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
+                # Show Result in a labeled container
+                with st.container(border=True):
+                    st.image(cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB))
+                    if alert:
+                        st.error("🚨 WILD ANIMAL DETECTED!")
+                    else:
+                        st.success("✅ No Dangerous Wildlife Detected")
                 
                 # SAVE TO HISTORY (Every Image Uploaded)
                 if file_id not in st.session_state.processed_files:
@@ -301,18 +332,28 @@ if st.session_state.page == "main":
             os.remove(tfile.name)
             st.success("✅ Video Processing Complete!")
             
-    else:
-        # Show standard control buttons only when nothing is open
-        if st.button("Start Live Detection"):
-            st.session_state.page = "live"
-            st.rerun()
-        if st.button("Stop Live Detection"):
-            st.rerun()
-        if st.button("View Saved History"):
-            st.session_state.page = "history"
-            st.rerun()
-        if st.button("Exit"):
-            st.stop()
+        # --- ROBUST AUTO-SCROLL (FORCED) ---
+        st.markdown("""
+            <script>
+                setTimeout(function() {
+                    // Method 1: Scroll parent container
+                    window.parent.postMessage({type: 'streamlit:scroll_to_bottom'}, '*');
+                    
+                    // Method 2: Direct scroll if permissions allow
+                    try {
+                        window.parent.window.scrollTo({
+                            top: 1000, 
+                            behavior: 'smooth'
+                        });
+                    } catch (e) {
+                        // Method 3: Internal iframe scroll as fallback
+                        window.scrollTo(0, document.body.scrollHeight);
+                    }
+                }, 500); 
+            </script>
+            """, unsafe_allow_html=True)
+            
+    pass
 
 # ================= HISTORY PAGE =================
 elif st.session_state.page == "history":
@@ -339,8 +380,9 @@ elif st.session_state.page == "history":
 
 # ================= LIVE MODE =================
 elif st.session_state.page == "live":
-    st.markdown('<div style="text-align:center; color:#0D47A1; font-weight:bold; font-size:20px;">📡 Live Mode Access</div>', unsafe_allow_html=True)
-    if st.button("⬅️ Back to Menu"):
+    st.markdown('<div class="original-title">📡 Live Mode - Camera Capture</div>', unsafe_allow_html=True)
+    st.info("💡 Take a photo below to analyze the live feed for wild animals.")
+    if st.button("⬅️ Back to Home"):
         st.session_state.page = "main"
         st.rerun()
 

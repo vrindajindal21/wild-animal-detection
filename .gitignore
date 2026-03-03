@@ -1,0 +1,5 @@
+*.exe
+__pycache__/
+.ipynb_checkpoints/
+*.pt
+deployment_package/
